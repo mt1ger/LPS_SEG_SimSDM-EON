@@ -277,9 +277,6 @@ ResourceAssignment::match_SC_and_voids(
   vector<int> assignedSpectralSegments_sec;
   while(bitRate > 0)
   {
-    cout << "CCCC " << bitRate << endl;
-    cout << "CCCC " << sCIter->sCBitRate << endl;
-    cout << "CCCC " << sCIter->numofMSSs4Request << endl;
     /** Maybe useful when using multiple SC options for allocation **/
     // if(potentialVoids_iter == potentialVoids.end())
     // {
@@ -291,14 +288,12 @@ ResourceAssignment::match_SC_and_voids(
     // }
     if(potentialVoids_iter == potentialVoids.end())
     {
-      cout << "End of PV" << endl;
       *availableFlag_ptr = false;
       break;
     }
     else if(potentialVoids_iter->at(2) - potentialVoids_iter->at(1) + 1
             == sCIter->numofMSSs + GB)
     {
-      cout << "Equal " << endl;
       assignedSpectralSegments_sec.push_back(potentialVoids_iter->at(0));
       assignedSpectralSegments_sec.push_back(potentialVoids_iter->at(1));
       assignedSpectralSegments_sec.push_back(potentialVoids_iter->at(2));
@@ -338,7 +333,6 @@ ResourceAssignment::match_SC_and_voids(
     else if(potentialVoids_iter->at(2) - potentialVoids_iter->at(1) + 1
             > sCIter->numofMSSs + GB)
     {
-      cout << "Greater " << endl;
       assignedSpectralSegments_sec.push_back(potentialVoids_iter->at(0));
       assignedSpectralSegments_sec.push_back(potentialVoids_iter->at(1));
       assignedSpectralSegments_sec.push_back(potentialVoids_iter->at(1)
@@ -389,7 +383,6 @@ ResourceAssignment::match_SC_and_voids(
     else if((potentialVoids_iter->at(2) - potentialVoids_iter->at(1) + 1)
             < sCIter->numofMSSs + GB)
     {
-      cout << "Smaller " << endl;
       potentialVoids_iter++;
     }
   }
@@ -498,8 +491,6 @@ ResourceAssignment::handle_requests(
       check_resource_availibility(timeIter, circuitRoute, &tempAvailableFlag);
       if(tempAvailableFlag == true)
       {
-        // cout << "time count " <<  timeCount<< endl;
-        // cout << "duration count " <<  durationCount << endl;
         snapshotsAttributes_third[1] = timeCount;
         if(durationCount == 1)
         {
@@ -630,13 +621,10 @@ ResourceAssignment::handle_requests(
     availableFlag = true;
     for(; durationCount != 0; timeIter++)
     {
-      cout << "***** time duration " << timeCount << ' ' << durationCount
-           << endl;
       /** Handle duplicates **/
       tempAvailableFlag = true;
       if(!assignedSpectralSegments.empty())
       {
-        cout << "Duplicates " << tempAvailableFlag << endl;
         check_resource_availibility(timeIter, circuitRoute, &tempAvailableFlag);
         if(tempAvailableFlag == true)
         {
@@ -645,18 +633,6 @@ ResourceAssignment::handle_requests(
             snapshotsAttributes_sec[i][1] = timeCount;
           }
 
-          cout << "the size of snapshotsAttributes_sec is "
-               << snapshotsAttributes_sec.size() << endl;
-          for(int i = 0; i < snapshotsAttributes_sec.size(); i++)
-          {
-            cout << "  ";
-            for(int j = 0; j < snapshotsAttributes_sec[i].size(); j++)
-            {
-              cout << snapshotsAttributes_sec[i][j] << ' ';
-            }
-          }
-          cout << endl;
-          cout << "END of snapshotsAttributes_sec" << endl;
 
           if(durationCount == 1)
           {
@@ -687,7 +663,6 @@ ResourceAssignment::handle_requests(
       potentialVoids_backup = potentialVoids;
 
       /** ALLOCATION EFFICIENCY DRIVEN mode **/
-      cout << "**** EFFICIENCY driven ***" << endl;
       if(potentialVoids.empty())
       {
         availableFlag = false;
@@ -705,7 +680,6 @@ ResourceAssignment::handle_requests(
 
         if(availableFlag == true)
         {
-          cout << "EFFICIENCY assignedSpectralSegments: " << endl;
           mF = sCIter->mF;
           snapshotsAttributes_sec.clear();
           for(int i = 0; i < assignedSpectralSegments.size(); i++)
@@ -713,30 +687,14 @@ ResourceAssignment::handle_requests(
             fill(snapshotsAttributes_third.begin(),
                  snapshotsAttributes_third.end(), 0);
             snapshotsAttributes_third[0] = snapshotStartTime;
-            cout << "  ";
             for(int j = 0; j < assignedSpectralSegments[i].size(); j++)
             {
 
               snapshotsAttributes_third[j + 2] = assignedSpectralSegments[i][j];
 
-              cout << assignedSpectralSegments[i][j] << ' ';
             }
             snapshotsAttributes_sec.push_back(snapshotsAttributes_third);
           }
-          cout << endl;
-
-          cout << "the size of snapshotsAttributes_sec is "
-               << snapshotsAttributes_sec.size() << endl;
-          for(int i = 0; i < snapshotsAttributes_sec.size(); i++)
-          {
-            cout << "  ";
-            for(int j = 0; j < snapshotsAttributes_sec[i].size(); j++)
-            {
-              cout << snapshotsAttributes_sec[i][j] << ' ';
-            }
-          }
-          cout << endl;
-          cout << "END of snapshotsAttributes_sec" << endl;
         }
         // ???
         // // ALLOCATION EFFICIENCY mode use the smallest allocation size SCs
@@ -745,12 +703,8 @@ ResourceAssignment::handle_requests(
       }
 
       /** NUMBER OF SEGMENTS DRIVEN mode **/
-      cout << "AAAA " << availableFlag << endl;
-      cout << "AAAA " << assignedSpectralSegments.size() << ' '
-           << network->maxAllowedSegments << endl;
       if(assignedSpectralSegments.size() > network->maxAllowedSegments)
       {
-        cout << "**** SEGMENTS driven ***" << endl;
 
         // Reset the potentialVoids
         potentialVoids = potentialVoids_backup;
@@ -802,7 +756,6 @@ ResourceAssignment::handle_requests(
 
             if(availableFlag == true)
             {
-              cout << "SEG LIMITATION assignedSpectralSegments: " << endl;
               mF = iter->mF;
               snapshotsAttributes_sec.clear();
               for(int i = 0; i < assignedSpectralSegments.size(); i++)
@@ -810,31 +763,15 @@ ResourceAssignment::handle_requests(
                 fill(snapshotsAttributes_third.begin(),
                      snapshotsAttributes_third.end(), 0);
                 snapshotsAttributes_third[0] = snapshotStartTime;
-                cout << "  ";
                 for(int j = 0; j < assignedSpectralSegments[i].size(); j++)
                 {
 
                   snapshotsAttributes_third[j + 2]
                       = assignedSpectralSegments[i][j];
 
-                  cout << assignedSpectralSegments[i][j] << ' ';
                 }
                 snapshotsAttributes_sec.push_back(snapshotsAttributes_third);
               }
-              cout << endl;
-
-              cout << "the size of snapshotsAttributes_sec is "
-                   << snapshotsAttributes_sec.size() << endl;
-              for(int i = 0; i < snapshotsAttributes_sec.size(); i++)
-              {
-                cout << "  ";
-                for(int j = 0; j < snapshotsAttributes_sec[i].size(); j++)
-                {
-                  cout << snapshotsAttributes_sec[i][j] << ' ';
-                }
-              }
-              cout << endl;
-              cout << "END of snapshotsAttributes_sec" << endl;
             }
           }
         }
@@ -918,8 +855,6 @@ ResourceAssignment::handle_requests(
       durationCount
           = snapshotsAttributes[i][0][1] - snapshotsAttributes[i][0][0] + 1;
 
-      cout << "lasdjflajflasjl" << endl;
-      cout << startTime << ' ' << durationCount << endl;
       for(long unsigned int j = 0; j < snapshotsAttributes[i].size(); j++)
       {
         for(; durationCount != 0; timeIter++)
@@ -939,7 +874,6 @@ ResourceAssignment::handle_requests(
           durationCount--;
         }
       }
-      cout << "END" << endl;
     }
 
 

@@ -1,8 +1,9 @@
 #ifndef _H_TXTPARSE
 #define _H_TXTPARSE
 
-#include <vector>
 #include <cmath>
+#include <string>
+#include <vector>
 
 using namespace std;
 
