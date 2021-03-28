@@ -57,11 +57,14 @@ main(int argc, char *argv[]) {
       = (double)network->numofFailedRequests / (double)network->numofRequests;
 
   fstream file_ptr;
-  string  filePath;
-  filePath = path + "MaxSec.txt";
-  file_ptr.open(filePath, fstream::app);
-  file_ptr << to_string(network->maxNumofSections) + ' ';
-  file_ptr.close();
+
+  // Begin???: Still needed? for Max segments used
+  // string  filePath;
+  // filePath = path + "MaxSec.txt";
+  // file_ptr.open(filePath, fstream::app);
+  // file_ptr << to_string(network->maxNumofSegments) + ' ';
+  // file_ptr.close();
+  // End???
 
   string resultFile; // file for storing sim results
   resultFile = path + "Plot.txt";
@@ -92,6 +95,10 @@ main(int argc, char *argv[]) {
         + '\n';
   file_ptr << plot;
   file_ptr.close();
+
+  cout << "The blocked request distribution: (40, 100, 400)" << endl;
+  cout << network->block_40 << ' ' << network->block_100 << ' '
+       << network->block_400 << endl;
 
   end = chrono::high_resolution_clock::now();
   chrono::duration<double> timeSpent

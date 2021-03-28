@@ -81,8 +81,8 @@ public:
 
   // Metrics to Measure Fregmentation
   double    totalMDataSize; // The total modulated data size.
-  long long totalSS4Data;
-  long long totalSSOccupied;
+  long long totalSSs4Data;
+  long long totalSSsOccupied;
 
   double avgIntFrag;
   double avgExtFrag;
@@ -91,25 +91,22 @@ public:
   // Timer and counters
   long long requestCounter; // Generated Number of Requests
   long long numofAllocatedRequests;
-  long long numofDoneRequests;   // Requests which are successfully
-                                 // allocated and released, or blocked
-                                 // will be considered as DoneRequests
-  long long numofFailedRequests; // Number of Requests that are blocked
-  long long numofTransponders;   // Number of TranspondersUsed at a
-                                 // Specific Time
-  long long numofSS4Data;
+  long long numofDoneRequests;    // Requests which are successfully
+                                  // allocated and released, or blocked
+                                  // will be considered as DoneRequests
+  long long numofFailedRequests;  // Number of Requests that are blocked
+  long long numofTransponders;    // Number of Transponders Used for a
+                                  // Specific Request
   long long maxNumofTransponders; // For one time simulation, Maximum Number
                                   // of Transponders Used Simultaneously
-  long long maxNumofSS4Data;      // For one time simulation, Maximum Number
-                                  // of Data Spectral Slot Occupation
-  int    numofSections;
-  int    maxNumofSections;
+  long long numofSSs4Data;    // Number of Data Spectral Slots Occupied for a
+                              // Specific Request
+  long long maxNumofSSs4Data; // For one time simulation, Maximum Number
+                              // of Data Spectral Slot Occupation
+  int numofSegments;          // Number of segments used for a specific request
+  int maxNumofSegments;       // For one time simulation, Maximum Number of
+                              // Segments Used.
   double systemClock;
-
-  /****  Temp: Delete this after varified ****/
-  long long probe_40  = 0;
-  long long probe_100 = 0;
-  long long probe_400 = 0;
 
   /**** Ratio of requests in different types ****/
   double ratio_40  = 0.3;

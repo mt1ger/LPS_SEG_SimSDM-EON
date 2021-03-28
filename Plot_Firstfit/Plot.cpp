@@ -11,8 +11,8 @@
 // #define NUMOFSEEDS 30
 #define NUMOFSEEDS 3
 // #define NUMOFREQUESTS 100000
-#define NUMOFREQUESTS 1000
-#define LTDOFSEG      4
+#define NUMOFREQUESTS 10000
+#define LTDOFSEG      8
 // #define LTDOFSEG 1
 #define MU 0.2
 
@@ -32,26 +32,32 @@ main()
   vector<int>         Core, Lambda, Seed, Erlang;
   double              Number;
   static unsigned int NumofRequests = NUMOFREQUESTS;
-  static string Exec = "/Users/mt1ger/Code_Projects/Simulator/"
+  // static string Exec = "/Users/mt1ger/Code_Projects/Simulator/"
+  //                      "LPS_SEG_SimSDM-EON/Sim_Firstfit";
+  // static string Topo = "/Users/mt1ger/Code_Projects/Simulator/"
+  //                      "LPS_SEG_SimSDM-EON/Topology/NSF14.txt";
+  // static string Path = "/Users/mt1ger/Code_Projects/Simulator/"
+  //                      "LPS_SEG_SimSDM-EON/Plot_Firstfit/";
+
+  static string Exec = "/home/mt1ger/Desktop/"
                        "LPS_SEG_SimSDM-EON/Sim_Firstfit";
-  static string Topo = "/Users/mt1ger/Code_Projects/Simulator/"
+  static string Topo = "/home/mt1ger/Desktop/"
                        "LPS_SEG_SimSDM-EON/Topology/NSF14.txt";
-  static string Path = "/Users/mt1ger/Code_Projects/Simulator/"
+  static string Path = "/home/mt1ger/Desktop/"
                        "LPS_SEG_SimSDM-EON/Plot_Firstfit/";
 
   unsigned int   cnt = 0;
   string         Filename;
   txtParse       txtparse;
-  int            NumofThreads = 0;
   vector<string> FolderSet;
 
   Core.push_back(1);
-  Core.push_back(2);
-  // Core.push_back(4);
+  // Core.push_back(2);
+  Core.push_back(4);
   // Core.push_back(7);
 
   // for (int i = 100; i < 130; i += 10) {
-  for(int i = 2; i < 101; i += 2)
+  for(int i = 2; i < 101; i += 5)
   {
     Lambda.push_back(i);
   }
@@ -70,51 +76,64 @@ main()
     Seed.push_back(rand() / 65535);
   }
 
-  for(unsigned int Max = 1; Max <= LTDOFSEG; Max++)
-  {
-    NumofThreads = Core.size() * Lambda.size() * Seed.size();
+  vector<vector<string>> cmds;
 
-    thread ThreadPointer[NumofThreads];
+  for(unsigned int Max = 1; Max <= LTDOFSEG; Max *= 2)
+  {
     string IsoFolder, Command, PlotFile;
 
-    IsoFolder = Path + to_string(Max) + '/';
-    FolderSet.push_back(IsoFolder);
-    Command  = "mkdir " + IsoFolder;
-    PlotFile = IsoFolder + "Plot.txt";
-    system(Command.c_str());
-
-    ofstream file(PlotFile);
     for(unsigned int k = 0; k < Core.size(); k++)
     {
-      for(unsigned int lambda = 0; lambda < Lambda.size(); lambda++)
+      IsoFolder = Path + to_string(Max) + "/Plot" + to_string(Core[k]) + '/';
+      Command   = "mkdir -p " + IsoFolder;
+      system(Command.c_str());
+      PlotFile = IsoFolder + "Plot.txt";
+      ofstream       file(PlotFile);
+      vector<string> cmds_sec;
+      for(unsigned int seed = 0; seed < NUMOFSEEDS; seed++)
       {
-        for(unsigned int seed = 0; seed < NUMOFSEEDS; seed++)
+        for(unsigned int lambda = 0; lambda < Lambda.size(); lambda++)
         {
           string Cmd = Exec + ' ' + Topo + ' ' + IsoFolder + ' '
                        + to_string(NumofRequests) + ' ' + to_string(Core[k])
                        + ' ' + to_string(Lambda[lambda] * Core[k]) + ' '
                        + to_string(MU) + ' ' + to_string(Seed[seed]) + ' '
                        + to_string(Max);
-          ThreadPointer[cnt] = thread(thread_function, Cmd);
-          cnt++;
-          // thread_function(Cmd);
-          // cout << Cmd << endl;
+          cmds_sec.push_back(Cmd);
         }
       }
+      cmds.push_back(cmds_sec);
     }
-    for(int i = 0; i < NumofThreads; i++)
-    {
-      ThreadPointer[i].join();
-    }
-    cnt = 0;
   }
 
-  double Mu = MU;
-  for(int i = 0; i < FolderSet.size(); i++)
+
+  auto numofThreads = 4 * Core.size() * Seed.size() * Lambda.size();
+  thread threads[numofThreads];
+  auto   cntSize             = cmds[0].size();
+  int    threadsPerIteration = cmds.size();
+  int    threadsIter         = 0;
+  cnt                        = 0;
+  while(cnt < cntSize)
   {
-    // cout << FolderSet[i] << endl;
-    txtparse.parse(Core, Erlang, Seed, Mu, FolderSet[i]);
+    for(int i = 0; i < threadsPerIteration; i++)
+    {
+      cout << cmds[i][cnt] << endl;
+      threads[threadsIter + i] = thread(thread_function, cmds[i][cnt]);
+    }
+    for(int i = 0; i < threadsPerIteration; i++)
+    {
+      threads[threadsIter + i].join();
+    }
+    cnt++;
+    threadsIter += threadsPerIteration;
   }
+
+  // double Mu = MU;
+  // for(int i = 0; i < FolderSet.size(); i++)
+  // {
+  //   // cout << FolderSet[i] << endl;
+  //   txtparse.parse(Core, Erlang, Seed, Mu, FolderSet[i]);
+  // }
 
   return 1;
 }

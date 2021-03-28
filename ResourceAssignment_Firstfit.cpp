@@ -424,6 +424,7 @@ ResourceAssignment::handle_requests(
   vector<int>  circuitRoute; // store the nodes on the path
   bool         availableFlag     = false; // global flag
   string       mF                = "BPSK";
+  unsigned int bR                = 0;
   unsigned int mFBitsperSignal   = 0;
   bool         tempAvailableFlag = true; // flag just for handling duplicates
   long long    advTime;
@@ -470,6 +471,9 @@ ResourceAssignment::handle_requests(
       &circuitRequest_ptr->bitRate, &mF, &mFBitsperSignal);
   circuitRequest_ptr->occupiedSpectralSlots
       = circuitRequest_ptr->occupiedSpectralSlots + GB; // For data + GB
+  bR = circuitRequest_ptr->bitRate;
+  if(bR == 40)
+    bR = 50;
   /*** Considered time point by time point ***/
   for(; durationCount != 0; timeIter++)
   {
@@ -517,7 +521,6 @@ ResourceAssignment::handle_requests(
     /** Search for all potential voids for this time point **/
     potentialVoids.clear();
     create_voids(&circuitRoute, timeIter);
-
 
     /** Pre-allocation **/
     if(potentialVoids.empty())
@@ -644,8 +647,6 @@ ResourceAssignment::handle_requests(
         }
         else
         {
-          // snapshotsAttributes_sec.clear();
-          // snapshotsAttributes_sec.push_back(snapshotsAttributes_third);
           snapshotsAttributes.push_back(snapshotsAttributes_sec);
         }
       }
@@ -681,6 +682,7 @@ ResourceAssignment::handle_requests(
         if(availableFlag == true)
         {
           mF = sCIter->mF;
+          bR = iter->sCBitRate;
           snapshotsAttributes_sec.clear();
           for(int i = 0; i < assignedSpectralSegments.size(); i++)
           {
@@ -741,10 +743,6 @@ ResourceAssignment::handle_requests(
           {
             if(superChannelQueue.get(iter)->numofMSSs > MSSs4SC)
               continue;
-            // if(superChannelQueue.empty())
-            //   availableFlag = false;
-            // else
-            // {
             auto sCIter          = superChannelQueue.begin();
             numofGB              = 0;
             unsigned int bitRate = circuitRequest_ptr->bitRate;
@@ -752,11 +750,11 @@ ResourceAssignment::handle_requests(
                 = potentialVoids.begin();
 
             match_SC_and_voids(bitRate, &availableFlag, sCIter, &numofGB);
-            // }
 
             if(availableFlag == true)
             {
               mF = iter->mF;
+              bR = iter->sCBitRate;
               snapshotsAttributes_sec.clear();
               for(int i = 0; i < assignedSpectralSegments.size(); i++)
               {
@@ -785,8 +783,6 @@ ResourceAssignment::handle_requests(
       }
       if(durationCount == 1)
       {
-        snapshotsAttributes_sec.clear();
-        snapshotsAttributes_sec.push_back(snapshotsAttributes_third);
         snapshotsAttributes.push_back(snapshotsAttributes_sec);
       }
       timeCount++;
@@ -818,7 +814,6 @@ ResourceAssignment::handle_requests(
     assignedSpectralSegments.clear();
 
     network->numofFailedRequests++;
-
     switch(circuitRequest_ptr->bitRate)
     {
       case 40:
@@ -839,15 +834,6 @@ ResourceAssignment::handle_requests(
     // Occupy SSs
     for(long unsigned int i = 0; i < snapshotsAttributes.size(); i++)
     {
-      /* ORIGINAL */
-      // if(i != 0)
-      //   startTime = snapshotsAttributes[i - 1][0][1] + 1;
-      // timeIter = network->spectralSlots.begin();
-      // advTime  = startTime - network->firstMiliSec;
-      // advance(timeIter, advTime);
-      // durationCount
-      //     = snapshotsAttributes[i][0][1] - snapshotsAttributes[i][0][0] + 1;
-
       startTime = snapshotsAttributes[i][0][0];
       timeIter = network->spectralSlots.begin();
       advTime  = startTime - network->firstMiliSec;
@@ -892,6 +878,8 @@ ResourceAssignment::handle_requests(
     for(unsigned int t = 0; t < circuitRoute.size() - 1; t++)
       cout << circuitRoute.at(t) << " --> ";
     cout << circuitRoute.at(circuitRoute.size() - 1) << endl;
+    cout << "Super Channel Option: " << bR << endl;
+    ;
     for(long unsigned int i = 0; i < snapshotsAttributes.size(); i++)
     {
       cout << "From " << snapshotsAttributes[i][0][0] << " to "
@@ -900,17 +888,16 @@ ResourceAssignment::handle_requests(
       {
         cout << "  ";
         cout << "Core: " << snapshotsAttributes[i][j][2]
-             << "  Spectral Section: " << snapshotsAttributes[i][j][3] << " to "
-             << snapshotsAttributes[i][j][4] << endl;
+             << "  Spectral Segments: " << snapshotsAttributes[i][j][3]
+             << " to " << snapshotsAttributes[i][j][4] << endl;
       }
     }
+    cout << "# of Segments: " << snapshotsAttributes[0].size() << endl;
     cout << "# of Time-Slices: " << snapshotsAttributes.size() << endl;
-    cout << "# of Cores Used: " << '1' << endl;
-    cout << "# of Transponders Used: " << '1' << endl;
+    // cout << "# of Cores Used: " << '1' << endl;
     cout << "------------------------------------------------------------"
          << endl;
 #endif
-
     assignedSpectralSegments.clear();
 
     // CircuitRelease * circuitRelease;
@@ -921,46 +908,61 @@ ResourceAssignment::handle_requests(
     // circuitRequest->Duration, 1); eventQueue->queue_insert
     // (circuitRelease);
 
-    if(circuitRequest_ptr->bitRate == 40)
+    if(bR == 25)
+      network->numof25SC += snapshotsAttributes[0].size();
+    else if(bR == 50)
     {
       if(mF == "QPSK")
-        network->numof50SC2++;
+        network->numof50SC2 += snapshotsAttributes[0].size();
       else if(mF == "16QAM")
-        network->numof50SC4++;
+        network->numof50SC4 += snapshotsAttributes[0].size();
       else if(mF == "64QAM")
-        network->numof50SC6++;
+        network->numof50SC6 += snapshotsAttributes[0].size();
     }
-    else if(circuitRequest_ptr->bitRate == 100)
+    else if(bR == 100)
     {
       if(mF == "QPSK")
-        network->numof100SC2++;
+        network->numof100SC2 += snapshotsAttributes[0].size();
       else if(mF == "16QAM")
-        network->numof100SC4++;
+        network->numof100SC4 += snapshotsAttributes[0].size();
       else if(mF == "64QAM")
-        network->numof100SC6++;
+        network->numof100SC6 += snapshotsAttributes[0].size();
     }
-    else if(circuitRequest_ptr->bitRate == 400)
+    else if(bR == 200)
     {
       if(mF == "QPSK")
-        network->numof400SC2++;
+        network->numof200SC2 += snapshotsAttributes[0].size();
       else if(mF == "16QAM")
-        network->numof400SC4++;
+        network->numof200SC4 += snapshotsAttributes[0].size();
       else if(mF == "64QAM")
-        network->numof400SC6++;
+        network->numof200SC6 += snapshotsAttributes[0].size();
+    }
+    else if(bR == 400)
+    {
+      if(mF == "QPSK")
+        network->numof400SC2 += snapshotsAttributes[0].size();
+      else if(mF == "16QAM")
+        network->numof400SC4 += snapshotsAttributes[0].size();
+      else if(mF == "64QAM")
+        network->numof400SC6 += snapshotsAttributes[0].size();
     }
 
     network->numofAllocatedRequests++;
-    network->numofTransponders++;
-    network->totalTranspondersUsed++;
+    network->numofTransponders = snapshotsAttributes[0].size();
+    // network->numofSSs4Data
+    //     = (snapshotsAttributes[0][0][4] - snapshotsAttributes[0][0][3] + 1 -
+    //     GB)
+    //       * snapshotsAttributes[0].size();
+    network->totalTranspondersUsed += snapshotsAttributes[0].size();
     network->totalHoldingTime += circuitRequest_ptr->duration;
-    network->totalCoresUsed++;
+    // network->totalCoresUsed++;
     network->totalLPS += snapshotsAttributes.size();
-    network->totalMDataSize += circuitRequest_ptr->bitRate;
-    network->totalSS4Data
-        += (circuitRequest_ptr->occupiedSpectralSlots - GB) * mFBitsperSignal;
-    network->totalSSOccupied
-        += (circuitRequest_ptr->occupiedSpectralSlots - GB + GB)
-           * mFBitsperSignal;
+    network->totalSSs4Data += (snapshotsAttributes[0][0][4]
+                               - snapshotsAttributes[0][0][3] + 1 - GB)
+                              * snapshotsAttributes[0].size();
+    network->totalMDataSize += network->totalSSsOccupied
+        += (snapshotsAttributes[0][0][4] - snapshotsAttributes[0][0][3] + 1)
+           * snapshotsAttributes[0].size();
   }
 }
 
