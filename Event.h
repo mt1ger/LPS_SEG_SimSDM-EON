@@ -52,15 +52,18 @@ public:
 
 class CircuitRelease : public Event {
 public:
+  // CircuitRelease(long long eventID, vector<int> &circuitRoute,
+  //                // vector<vector<int>> &occupiedSpectralSection,
+  //                double arrivalTime, double startTime, double duration,
+  //                double releaseTime, unsigned int transpondersUsed);
   CircuitRelease(long long eventID, vector<int> &circuitRoute,
-                 vector<vector<int>> &occupiedSpectralSection,
                  double arrivalTime, double startTime, double duration,
                  double releaseTime, unsigned int transpondersUsed);
   ~CircuitRelease() {}
-  // unsigned int CircuitID;
   vector<int> circuitRoute;
-  vector<vector<int>>
-               occupiedSpectralSection; // Only stores head slot and tail slot
+  // vector<vector<int>>
+  //              occupiedSpectralSection; // Only stores head slot and tail
+  //              slot
   double       arrivalTime;
   double       startTime;
   double       duration;

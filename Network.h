@@ -7,7 +7,7 @@
 #include <thread>
 #include <vector>
 
-// #define TESTING
+#define TESTING
 
 #ifdef TESTING
 /** Not frequently needed **/

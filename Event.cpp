@@ -21,16 +21,21 @@ CircuitRequest::CircuitRequest(unsigned int src, unsigned int dest,
   this->bitRate               = bitRate;
 }
 
+// CircuitRelease::CircuitRelease(long long eventID, vector<int> &circuitRoute,
+//                                // vector<vector<int>>
+//                                &occupiedSpectralSection, double arrivalTime,
+//                                double startTime, double duration, double
+//                                releaseTime, unsigned int transpondersUsed)
 CircuitRelease::CircuitRelease(long long eventID, vector<int> &circuitRoute,
-                               vector<vector<int>> &occupiedSpectralSection,
                                double arrivalTime, double startTime,
                                double duration, double releaseTime,
-                               unsigned int transpondersUsed) {
+                               unsigned int transpondersUsed)
+{
   this->circuitRoute            = circuitRoute;
   this->arrivalTime             = arrivalTime;
   this->startTime               = startTime;
   this->duration                = duration;
-  this->occupiedSpectralSection = occupiedSpectralSection;
+  // this->occupiedSpectralSection = occupiedSpectralSection;
   this->releaseTime             = releaseTime;
   this->eventTime               = releaseTime;
   this->eventType               = c_Release;
