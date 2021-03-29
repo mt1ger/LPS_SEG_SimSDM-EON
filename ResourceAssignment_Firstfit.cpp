@@ -957,7 +957,6 @@ ResourceAssignment::handle_requests(
 
     network->numofAllocatedRequests++;
     network->numofTransponders += snapshotsAttributes[0].size();
-    cout << "NUMBER of transpondersUsed " << network->numofTransponders << endl;
     // network->numofSSs4Data
     //     = (snapshotsAttributes[0][0][4] - snapshotsAttributes[0][0][3] + 1 -
     //     GB)
@@ -988,7 +987,7 @@ ResourceAssignment::handle_releases(
        << endl;
   cout << "Release Event ID: " << circuitRelease_ptr->eventID
        << "\tTime: " << circuitRelease_ptr->eventTime << endl;
-  cout << "NUMBER of transpondersUsed " << network->numofTransponders << endl;
+  cout << "Number of transpondersUsed " << network->numofTransponders << endl;
   cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
        << endl;
 #endif

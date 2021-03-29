@@ -1,12 +1,12 @@
 CC=g++-10
 CPPSTD=-std=c++20
-LDFLAGS=-labt
+LDFLAGS=#-labt
 CFLAGS=-c -Wall
 # EXEC=Sim_Firstfit
 EXEC=test
-INCLUDES=-I /Users/mt1ger/argobots/usr/include\
+INCLUDES=#-I /Users/mt1ger/argobots/usr/include\
 				 -I /Users/mt1ger/argobots-install/include
-LIBS=-L /Users/mt1ger/argobots-install/lib
+LIBS=#-L /Users/mt1ger/argobots-install/lib
 
 
 SRCS=Network.cpp\
