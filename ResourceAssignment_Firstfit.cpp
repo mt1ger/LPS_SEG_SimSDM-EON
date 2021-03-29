@@ -682,7 +682,7 @@ ResourceAssignment::handle_requests(
         if(availableFlag == true)
         {
           mF = sCIter->mF;
-          bR = iter->sCBitRate;
+          bR = sCIter->sCBitRate;
           snapshotsAttributes_sec.clear();
           for(int i = 0; i < assignedSpectralSegments.size(); i++)
           {
@@ -900,13 +900,21 @@ ResourceAssignment::handle_requests(
 #endif
     assignedSpectralSegments.clear();
 
-    // CircuitRelease * circuitRelease;
-    // circuitRelease = new CircuitRelease (circuitRequest->EventID,
-    // CircuitRoute, assignedSpectralSegments, circuitRequest->ArrivalTime,
-    // circuitRequest->StartTime, circuitRequest->StartTime +
-    // circuitRequest->Duration, circuitRequest->StartTime +
-    // circuitRequest->Duration, 1); eventQueue->queue_insert
-    // (circuitRelease);
+    shared_ptr<Event> event_ptr;
+    event_ptr = make_shared<CircuitRelease>(
+        circuitRequest_ptr->eventID, circuitRoute,
+        circuitRequest_ptr->arrivalTime, circuitRequest_ptr->startTime,
+        circuitRequest_ptr->duration,
+        circuitRequest_ptr->startTime + circuitRequest_ptr->duration,
+        snapshotsAttributes[0].size());
+    eventQueue->queue_insert(event_ptr);
+
+    // circuitRelease = new CircuitRelease(
+    //     circuitRequest->EventID, CircuitRoute, assignedSpectralSegments,
+    //     circuitRequest->ArrivalTime, circuitRequest->StartTime,
+    //     circuitRequest->StartTime + circuitRequest->Duration,
+    //     circuitRequest->StartTime + circuitRequest->Duration, 1);
+    // eventQueue->queue_insert(circuitRelease);
 
     if(bR == 25)
       network->numof25SC += snapshotsAttributes[0].size();
@@ -948,7 +956,8 @@ ResourceAssignment::handle_requests(
     }
 
     network->numofAllocatedRequests++;
-    network->numofTransponders = snapshotsAttributes[0].size();
+    network->numofTransponders += snapshotsAttributes[0].size();
+    cout << "NUMBER of transpondersUsed " << network->numofTransponders << endl;
     // network->numofSSs4Data
     //     = (snapshotsAttributes[0][0][4] - snapshotsAttributes[0][0][3] + 1 -
     //     GB)
@@ -972,17 +981,14 @@ ResourceAssignment::handle_releases(
 {
 
   network->numofDoneRequests++;
-  network->numofTransponders--;
+  network->numofTransponders -= circuitRelease_ptr->transpondersUsed;
 
 #ifdef PRINT_allocation_block_release
   cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
        << endl;
-  cout << "Release Event: " << circuitRelease_ptr->eventID
+  cout << "Release Event ID: " << circuitRelease_ptr->eventID
        << "\tTime: " << circuitRelease_ptr->eventTime << endl;
-  cout << "Core: " << circuitRelease_ptr->occupiedSpectralSection[0][0]
-       << "  Spectral Section: "
-       << circuitRelease_ptr->occupiedSpectralSection[0][1] << " to "
-       << circuitRelease_ptr->occupiedSpectralSection[0][2] << endl;
+  cout << "NUMBER of transpondersUsed " << network->numofTransponders << endl;
   cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
        << endl;
 #endif

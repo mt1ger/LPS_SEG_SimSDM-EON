@@ -9,9 +9,9 @@
 #include <vector>
 
 // #define NUMOFSEEDS 30
-#define NUMOFSEEDS 3
+#define NUMOFSEEDS 5
 // #define NUMOFREQUESTS 100000
-#define NUMOFREQUESTS 10000
+#define NUMOFREQUESTS 30000
 #define LTDOFSEG      8
 // #define LTDOFSEG 1
 #define MU 0.2
@@ -57,7 +57,7 @@ main()
   // Core.push_back(7);
 
   // for (int i = 100; i < 130; i += 10) {
-  for(int i = 2; i < 101; i += 5)
+  for(int i = 2; i < 61; i += 2)
   {
     Lambda.push_back(i);
   }
@@ -77,6 +77,7 @@ main()
   }
 
   vector<vector<string>> cmds;
+  vector<string>         filePaths;
 
   for(unsigned int Max = 1; Max <= LTDOFSEG; Max *= 2)
   {
@@ -87,6 +88,7 @@ main()
       IsoFolder = Path + to_string(Max) + "/Plot" + to_string(Core[k]) + '/';
       Command   = "mkdir -p " + IsoFolder;
       system(Command.c_str());
+      filePaths.push_back(IsoFolder);
       PlotFile = IsoFolder + "Plot.txt";
       ofstream       file(PlotFile);
       vector<string> cmds_sec;
@@ -128,12 +130,10 @@ main()
     threadsIter += threadsPerIteration;
   }
 
-  // double Mu = MU;
-  // for(int i = 0; i < FolderSet.size(); i++)
-  // {
-  //   // cout << FolderSet[i] << endl;
-  //   txtparse.parse(Core, Erlang, Seed, Mu, FolderSet[i]);
-  // }
+  for(int i = 0; i < filePaths.size(); i++)
+  {
+    txtparse.parse(Core, Erlang, Seed, MU, filePaths[i]);
+  }
 
   return 1;
 }

@@ -140,9 +140,12 @@ Network::simulation()
       if(requestCounter != numofRequests)
         trafficGenerator.gen_request(systemClock);
     }
-    // else if (event->EventType == c_Release) {
-    // 	resourceAssignment.handle_releases ((CircuitRelease *) event);
-    // }
+    else if(event_ptr->eventType == c_Release)
+    {
+      shared_ptr<CircuitRelease> cr_ptr
+          = static_pointer_cast<CircuitRelease>(event_ptr);
+      resourceAssignment.handle_releases(cr_ptr);
+    }
     eventQueue->ev_Queue.pop_front(); // This will destroy the poped Event *.
 
     if(numofTransponders > maxNumofTransponders)
