@@ -26,15 +26,83 @@ string_split(const string &str_in, const string &delimiter)
   return words;
 }
 
+class Metrics
+{
+public:
+  Metrics(string name) { this->name = name; }
+  ~Metrics() {}
+
+  string name;
+  string fileName;
+  string dataString;
+  double dataNumber;
+  vector<vector<vector<double>>> array;
+  vector<vector<double>>         array_sec;
+  vector<double>                 array_third;
+};
+
 void
 txtParse::parse(vector<int> &PotentialCore, vector<int> &PotentialErlang,
                 vector<int> &PotentialSeed, double Mu, string path)
 {
-  string IFileName, IFile, OFileName1, OFileName2, OFileName3, OFileName4,
-      OFileName5, OFileName6, OFileName7, OFileName8, OFileName9, OFileName10,
-      OFileName11, OFileName12, OFileName13, OFileName14, OFileName15,
-      OFileName16, OFileName17, OFileName18, OFileName19, OFileName20,
-      OFileName21, OFileName22, OFileName23, OFileName24, OFileName25;
+
+  Metrics BP("BP"); // Blocking probability
+  Metrics NoT(
+      "NoT"); // Maximum number of transponders that are simultaneously used
+  Metrics CpR("CpR");   // Number of Cores per request
+  Metrics HTpR("HTpR"); // Holding time per request
+  Metrics TpR("TpR");   // Number of Transponders per request
+  Metrics LPSpR("LPSpR");     // Number of LPS per request
+  Metrics AvgIFpR("AvgIFpR"); // Average internal fragmentation per request
+  Metrics AvgEFpR("AvgEFpR"); // Average external fragmentation per request
+  Metrics AvgHFpR("AvgHFpR"); // Average hybrid fragmentation per request
+  Metrics Numof400SC6(
+      "Numof400SC6"); // Number of 400 Gb/s with 64QAM super channel used
+  Metrics Numof400SC4(
+      "Numof400SC4"); // Number of 400 Gb/s with 16QAM super channel used
+  Metrics Numof400SC2(
+      "Numof400SC2"); // Number of 400 Gb/s with QPSK super channel used
+  Metrics Numof200SC6(
+      "Numof200SC6"); // Number of 200 Gb/s with 64QAM super channel used
+  Metrics Numof200SC4(
+      "Numof200SC4"); // Number of 200 Gb/s with 16QAM super channel used
+  Metrics Numof200SC2(
+      "Numof200SC2");     // Number of 200 Gb/s with QPSK super channel used
+  Metrics Numof100SC6(
+      "Numof100SC6"); // Number of 100 Gb/s with 64QAM super channel used
+  Metrics Numof100SC4(
+      "Numof100SC4"); // Number of 100 Gb/s with 16QAM super channel used
+  Metrics Numof100SC2(
+      "Numof100SC2"); // Number of 100 Gb/s with QPSK super channel used
+  Metrics Numof50SC6(
+      "Numof50SC6"); // Number of 50 Gb/s with 64QAM super channel used
+  Metrics Numof50SC4(
+      "Numof50SC4"); // Number of 50 Gb/s with 16QAM super channel used
+  Metrics Numof50SC2(
+      "Numof50SC2"); // Number of 50 Gb/s with QPSK super channel used
+  Metrics Numof25SC2(
+      "Numof25SC2"); // Number of 25 Gb/s with QPSK super channel used
+  Metrics Block400("Block400"); // Number of blocked 400 Gb/s request
+  Metrics Block100("Block100"); // Number of blocked 100 Gb/s request
+  Metrics Block40("Block40");   // Number of blocked 40 Gb/s request
+  Metrics BlockIR("BlockIR");   // Number of blocked IR request
+  Metrics BlockAR("BlockAR");   // Number of blocked AR request
+  Metrics Block400IR("Block400IR"); // Number of blocked 400 Gb/s IR request
+  Metrics Block400AR("Block400AR"); // Number of blocked 400 Gb/s AR request
+  Metrics Block100IR("Block100IR"); // Number of blocked 100 Gb/s IR request
+  Metrics Block100AR("Block100AR"); // Number of blocked 100 Gb/s AR request
+  Metrics Block40IR("Block40IR");   // Number of blocked 40 Gb/s IR request
+  Metrics Block40AR("Block40AR");   // Number of blocked 40 Gb/s AR request
+
+  string IFileName, IFile;
+  string OFileName1, OFileName2, OFileName3, OFileName4, OFileName5, OFileName6,
+      OFileName7, OFileName8, OFileName9, OFileName10, OFileName11, OFileName12,
+      OFileName13, OFileName14, OFileName15, OFileName16, OFileName17,
+      OFileName18, OFileName19, OFileName20, OFileName21, OFileName22,
+      OFileName23, OFileName24, OFileName25, OFileName26, OFileName27,
+      OFileName28, OFileName29, OFileName30, OFileName31, OFileName32,
+      OFileName33;
+
   IFile     = "Plot";
   IFileName = path + IFile + ".txt";
   ifstream Fin(IFileName);
@@ -69,7 +137,7 @@ txtParse::parse(vector<int> &PotentialCore, vector<int> &PotentialErlang,
       YNumof50SC4array, YNumof50SC2array, YNumof25SCarray, YBlock400array,
       YBlock100array, YBlock40array;
 
-  /*** Initialization:  {core, erlang, data1, data2, data3} ***/
+  /*** Initialization:  {core, erlang, data1, data2, data3, ...} ***/
   for(int i = 0; i < PotentialCore.size(); i++)
   {
     for(int k = 0; k < PotentialErlang.size(); k++)
