@@ -29,9 +29,9 @@
 #define NUMOFSPECTRALSLOTS 128
 // #define NUMOFSPECTRALSLOTS 40
 #define BW_SPECSLOT        12.5
-// #define AR_RATE 0.5
 #define AR_RATE             0.5
-#define MAX_NUMOFTIMESLICES 20
+// #define MAX_NUMOFTIMESLICES 26
+#define MAX_NUMOFTIMESLICES 1
 
 using namespace std;
 
@@ -121,7 +121,15 @@ public:
   /**** Probes for blocked requests in different types ****/
   long long block_40  = 0;
   long long block_100 = 0;
-  long long block_400 = 0;
+  long long block_400  = 0;
+  long long block_40AR = 0;
+  long long block_40IR = 0;
+  long long block_100AR = 0;
+  long long block_100IR = 0;
+  long long block_400AR = 0;
+  long long block_400IR = 0;
+  long long block_IR    = 0;
+  long long block_AR    = 0;
 
   // The bit rates for candidate super channels
   vector<int> candidateBR {25, 50, 100, 200, 400};

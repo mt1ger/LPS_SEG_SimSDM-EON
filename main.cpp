@@ -58,13 +58,13 @@ main(int argc, char *argv[]) {
 
   fstream file_ptr;
 
-  // Begin???: Still needed? for Max segments used
+  // ??? Begin: Still needed? for Max segments used
   // string  filePath;
   // filePath = path + "MaxSec.txt";
   // file_ptr.open(filePath, fstream::app);
   // file_ptr << to_string(network->maxNumofSegments) + ' ';
   // file_ptr.close();
-  // End???
+  // ??? End
 
   string resultFile; // file for storing sim results
   resultFile = path + "Plot.txt";
@@ -92,13 +92,14 @@ main(int argc, char *argv[]) {
         + to_string(network->numof50SC2) + ',' + to_string(network->numof25SC)
         + ',' + to_string(network->block_400) + ','
         + to_string(network->block_100) + ',' + to_string(network->block_40)
-        + '\n';
+        + ',' + to_string(network->block_AR) + ','
+        + to_string(network->block_IR) + ',' + to_string(network->block_400AR)
+        + ',' + to_string(network->block_400IR) + ','
+        + to_string(network->block_100AR) + ','
+        + to_string(network->block_100IR) + ',' + to_string(network->block_40AR)
+        + ',' + to_string(network->block_40IR) + '\n';
   file_ptr << plot;
   file_ptr.close();
-
-  cout << "The blocked request distribution: (40, 100, 400)" << endl;
-  cout << network->block_40 << ' ' << network->block_100 << ' '
-       << network->block_400 << endl;
 
   end = chrono::high_resolution_clock::now();
   chrono::duration<double> timeSpent

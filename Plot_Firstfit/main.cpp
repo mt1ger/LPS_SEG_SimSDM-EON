@@ -12,7 +12,7 @@ main()
   vector<int> Core, Lambda, Seed, Erlang;
   int         Number = 40;
 
-  Core.push_back(1);
+  // Core.push_back(1);
   // Core.push_back(2);
   Core.push_back(4);
   // Core.push_back(7);
@@ -30,20 +30,21 @@ main()
   Seed.push_back(16590);
   Seed.push_back(2893);
 
-  txtParse tp;
-  string parentPath = "/Users/mt1ger/Code_Projects/Simulator/DATA/"
-                      "LPS_SEG_SimSDM-EON/Plot_Firstfit/";
+  string parentPath = "/Users/mt1ger/Code_Projects/Simulator/"
+                      "LPS_SEG_SimSDM-EON/Plot_Firstfit/test0/";
+  txtParse       tp(Core, Erlang, Seed, parentPath);
   vector<string> filePaths;
-  for(int i = 1; i <= 8; i *= 2)
-  {
-    for(int j = 1; j <= 4; j *= 4)
-    {
-      string      filePath = parentPath;
-      vector<int> tempCore;
-      tempCore.push_back(j);
-      filePath += to_string(i) + "/Plot" + to_string(j) + '/';
-      cout << filePath << endl;
-      tp.parse(tempCore, Erlang, Seed, MU, filePath);
-    }
-  }
+  // for(int i = 1; i <= 8; i *= 2)
+  // {
+  //   for(int j = 1; j <= 4; j *= 4)
+  //   {
+  //     string      filePath = parentPath;
+  //     vector<int> tempCore;
+  //     tempCore.push_back(j);
+  //     filePath += to_string(i) + "/Plot" + to_string(j) + '/';
+  //     cout << filePath << endl;
+  //     tp.parse();
+  //   }
+  // }
+  tp.parse();
 }

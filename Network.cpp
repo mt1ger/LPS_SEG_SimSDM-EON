@@ -151,12 +151,12 @@ Network::simulation()
     if(numofTransponders > maxNumofTransponders)
       maxNumofTransponders = numofTransponders;
 
-    // Begin??? Does not have a good way of measuring
+    // ??? Begin: Does not have a good way of measuring
     if(numofSSs4Data > maxNumofSSs4Data)
     {
       maxNumofSSs4Data = numofSSs4Data;
     }
-    // End???
+    // ??? End
 
 #ifdef DEBUG_probe_NumofDoneReqeusts_and_NumofRequests
     cout << " " << NumofDoneRequests << " and " << NumofRequests << endl;
@@ -191,6 +191,8 @@ Network::simulation()
   avgExtFrag          = (1 - (double)totalSSs4Data / totalSSsOccupied);
   avgHybridFrag
       = (1 - (double)totalMDataSize / (totalSSsOccupied * BW_SPECSLOT));
+  block_IR = block_400IR + block_100IR + block_40IR;
+  block_AR = block_400AR + block_100AR + block_40AR;
 
   // cout << "Spectrum Utilization is: " << spectrumUtilization << endl;
   cout << "Utilization of different SCs (400: 64QAM, 400: 16QAM, 400: QPSK, "
@@ -201,6 +203,12 @@ Network::simulation()
        << numof100SC6 << ' ' << numof100SC4 << ' ' << numof100SC2 << ' '
        << numof50SC6 << ' ' << numof50SC4 << ' ' << numof50SC2 << ' '
        << numof25SC << endl;
+  cout << "Blocked requests distribution is (AR, IR, 400, 100, 40, 400: AR, "
+          "400: IR, 100: AR, 100: IR, 40: AR, 40: IR): "
+       << block_AR << ' ' << block_IR << ' ' << block_400 << ' ' << block_100
+       << ' ' << block_40 << ' ' << block_400AR << ' ' << block_400IR << ' '
+       << block_100AR << ' ' << block_100IR << ' ' << block_40AR << ' '
+       << block_40IR << endl;
   cout << "Max # of Transponders used: " << maxNumofTransponders << endl;
   cout << "# of blocked requests is " << numofFailedRequests << endl;
   cout << "Network Load: " << lambda / mu << " Erlang" << endl;

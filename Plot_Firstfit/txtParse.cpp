@@ -26,553 +26,309 @@ string_split(const string &str_in, const string &delimiter)
   return words;
 }
 
-class Metrics
+void
+txtParse::initialization(Metric *metric_ptr)
 {
-public:
-  Metrics(string name) { this->name = name; }
-  ~Metrics() {}
-
-  string name;
-  string fileName;
-  string dataString;
-  double dataNumber;
-  vector<vector<vector<double>>> array;
-  vector<vector<double>>         array_sec;
-  vector<double>                 array_third;
-};
+  for(int i = 0; i < potentialCores.size(); i++)
+  {
+    for(int k = 0; k < potentialErlangs.size(); k++)
+    {
+      metric_ptr->array_third.push_back(potentialCores[i]);
+      metric_ptr->array_third.push_back(potentialErlangs[k]);
+      for(int i = 0; i < potentialSeeds.size(); i++)
+      {
+        metric_ptr->array_third.push_back(-1);
+      }
+      metric_ptr->array_sec.push_back(metric_ptr->array_third);
+      metric_ptr->array_third.clear();
+    }
+    metric_ptr->array.push_back(metric_ptr->array_sec);
+    metric_ptr->array_sec.clear();
+  }
+}
 
 void
-txtParse::parse(vector<int> &PotentialCore, vector<int> &PotentialErlang,
-                vector<int> &PotentialSeed, double Mu, string path)
+txtParse::extraction(const string &fileContent, Metric *metric_ptr,
+                     string &core, string &erlang, string &seed)
 {
 
-  Metrics BP("BP"); // Blocking probability
-  Metrics NoT(
+  int coreCnt, erlangCnt, seedCnt;
+
+  metric_ptr->dataString = fileContent;
+  metric_ptr->dataNumber = stof(metric_ptr->dataString);
+  double temp_core       = stof(core);
+  double temp_erlang     = stof(erlang);
+  double temp_seed       = stof(seed);
+
+  int intCore = floor(temp_core + 0.005);
+  for(coreCnt = 0; coreCnt < potentialCores.size(); coreCnt++)
+  {
+    if(intCore == potentialCores[coreCnt])
+    {
+      break;
+    }
+  }
+
+  int normErlang = floor(temp_erlang + 0.005) / potentialCores[coreCnt];
+  for(erlangCnt = 0; erlangCnt < potentialErlangs.size(); erlangCnt++)
+  {
+    if(normErlang == potentialErlangs[erlangCnt])
+    {
+      break;
+    }
+  }
+
+  int intSeed = floor(temp_seed + 0.005);
+  for(seedCnt = 0; seedCnt < potentialSeeds.size(); seedCnt++)
+  {
+    if(intSeed == potentialSeeds[seedCnt])
+      break;
+  }
+
+  metric_ptr->array[coreCnt][erlangCnt].at(seedCnt + 2)
+      = metric_ptr->dataNumber;
+}
+
+void
+txtParse::avg_data(Metric *metric_ptr)
+{
+  int cnt = metric_ptr->array[0][0].size() - 2;
+  for(int i = 0; i < potentialCores.size(); i++)
+  {
+    for(int j = 0; j < potentialErlangs.size(); j++)
+    {
+      double tempData = 0;
+
+      for(int k = 2; k < 2 + cnt; k++)
+      {
+        tempData += metric_ptr->array[i][j][k];
+      }
+
+      tempData = tempData / cnt;
+
+      metric_ptr->array[i][j].push_back(tempData);
+    }
+  }
+}
+
+void
+txtParse::write_to_files(Metric *metric_ptr)
+{
+  metric_ptr->fileName = path + iFileName + "_" + metric_ptr->name + ".csv";
+
+  ofstream outputFile(metric_ptr->fileName);
+
+  string strAllSeeds;
+  for(int i = 0; i < potentialSeeds.size(); i++)
+  {
+    strAllSeeds = strAllSeeds + to_string(potentialSeeds[i]) + ',';
+  }
+  strAllSeeds = strAllSeeds + '\n';
+  outputFile << strAllSeeds;
+
+  for(int i = 0; i < metric_ptr->array.size(); i++)
+  {
+    for(int j = 0; j < metric_ptr->array[i].size(); j++)
+    {
+      string strData;
+
+      for(int k = 0; k < metric_ptr->array[i][j].size(); k++)
+      {
+        strData = strData + to_string(metric_ptr->array[i][j][k]) + ',';
+      }
+      strData = strData + '\n';
+      outputFile << strData;
+    }
+  }
+
+  outputFile.close();
+}
+
+void
+txtParse::parse()
+{
+
+  Metric BP("BP"); // Blocking probability
+  Metric NoT(
       "NoT"); // Maximum number of transponders that are simultaneously used
-  Metrics CpR("CpR");   // Number of Cores per request
-  Metrics HTpR("HTpR"); // Holding time per request
-  Metrics TpR("TpR");   // Number of Transponders per request
-  Metrics LPSpR("LPSpR");     // Number of LPS per request
-  Metrics AvgIFpR("AvgIFpR"); // Average internal fragmentation per request
-  Metrics AvgEFpR("AvgEFpR"); // Average external fragmentation per request
-  Metrics AvgHFpR("AvgHFpR"); // Average hybrid fragmentation per request
-  Metrics Numof400SC6(
+  Metric CpR("CpR");         // Number of Cores per request
+  Metric HTpR("HTpR");       // Holding time per request
+  Metric TpR("TpR");         // Number of Transponders per request
+  Metric LPSpR("LPSpR");     // Number of LPS per request
+  Metric AvgIFpR("AvgIFpR"); // Average internal fragmentation per request
+  Metric AvgEFpR("AvgEFpR"); // Average external fragmentation per request
+  Metric AvgHFpR("AvgHFpR"); // Average hybrid fragmentation per request
+  Metric Numof400SC6(
       "Numof400SC6"); // Number of 400 Gb/s with 64QAM super channel used
-  Metrics Numof400SC4(
+  Metric Numof400SC4(
       "Numof400SC4"); // Number of 400 Gb/s with 16QAM super channel used
-  Metrics Numof400SC2(
+  Metric Numof400SC2(
       "Numof400SC2"); // Number of 400 Gb/s with QPSK super channel used
-  Metrics Numof200SC6(
+  Metric Numof200SC6(
       "Numof200SC6"); // Number of 200 Gb/s with 64QAM super channel used
-  Metrics Numof200SC4(
+  Metric Numof200SC4(
       "Numof200SC4"); // Number of 200 Gb/s with 16QAM super channel used
-  Metrics Numof200SC2(
-      "Numof200SC2");     // Number of 200 Gb/s with QPSK super channel used
-  Metrics Numof100SC6(
+  Metric Numof200SC2(
+      "Numof200SC2"); // Number of 200 Gb/s with QPSK super channel used
+  Metric Numof100SC6(
       "Numof100SC6"); // Number of 100 Gb/s with 64QAM super channel used
-  Metrics Numof100SC4(
+  Metric Numof100SC4(
       "Numof100SC4"); // Number of 100 Gb/s with 16QAM super channel used
-  Metrics Numof100SC2(
+  Metric Numof100SC2(
       "Numof100SC2"); // Number of 100 Gb/s with QPSK super channel used
-  Metrics Numof50SC6(
+  Metric Numof50SC6(
       "Numof50SC6"); // Number of 50 Gb/s with 64QAM super channel used
-  Metrics Numof50SC4(
+  Metric Numof50SC4(
       "Numof50SC4"); // Number of 50 Gb/s with 16QAM super channel used
-  Metrics Numof50SC2(
+  Metric Numof50SC2(
       "Numof50SC2"); // Number of 50 Gb/s with QPSK super channel used
-  Metrics Numof25SC2(
-      "Numof25SC2"); // Number of 25 Gb/s with QPSK super channel used
-  Metrics Block400("Block400"); // Number of blocked 400 Gb/s request
-  Metrics Block100("Block100"); // Number of blocked 100 Gb/s request
-  Metrics Block40("Block40");   // Number of blocked 40 Gb/s request
-  Metrics BlockIR("BlockIR");   // Number of blocked IR request
-  Metrics BlockAR("BlockAR");   // Number of blocked AR request
-  Metrics Block400IR("Block400IR"); // Number of blocked 400 Gb/s IR request
-  Metrics Block400AR("Block400AR"); // Number of blocked 400 Gb/s AR request
-  Metrics Block100IR("Block100IR"); // Number of blocked 100 Gb/s IR request
-  Metrics Block100AR("Block100AR"); // Number of blocked 100 Gb/s AR request
-  Metrics Block40IR("Block40IR");   // Number of blocked 40 Gb/s IR request
-  Metrics Block40AR("Block40AR");   // Number of blocked 40 Gb/s AR request
+  Metric Numof25SC(
+      "Numof25SC");            // Number of 25 Gb/s with QPSK super channel used
+  Metric Block400("Block400"); // Number of blocked 400 Gb/s request
+  Metric Block100("Block100"); // Number of blocked 100 Gb/s request
+  Metric Block40("Block40");   // Number of blocked 40 Gb/s request
+  Metric BlockAR("BlockAR");   // Number of blocked AR request
+  Metric BlockIR("BlockIR");   // Number of blocked IR request
+  Metric Block400AR("Block400AR"); // Number of blocked 400 Gb/s AR request
+  Metric Block400IR("Block400IR"); // Number of blocked 400 Gb/s IR request
+  Metric Block100AR("Block100AR"); // Number of blocked 100 Gb/s AR request
+  Metric Block100IR("Block100IR"); // Number of blocked 100 Gb/s IR request
+  Metric Block40AR("Block40AR");   // Number of blocked 40 Gb/s AR request
+  Metric Block40IR("Block40IR");   // Number of blocked 40 Gb/s IR request
 
-  string IFileName, IFile;
-  string OFileName1, OFileName2, OFileName3, OFileName4, OFileName5, OFileName6,
-      OFileName7, OFileName8, OFileName9, OFileName10, OFileName11, OFileName12,
-      OFileName13, OFileName14, OFileName15, OFileName16, OFileName17,
-      OFileName18, OFileName19, OFileName20, OFileName21, OFileName22,
-      OFileName23, OFileName24, OFileName25, OFileName26, OFileName27,
-      OFileName28, OFileName29, OFileName30, OFileName31, OFileName32,
-      OFileName33;
+  iFileFullPath = path + iFileName + ".txt";
+  ifstream inputFile(iFileFullPath);
 
-  IFile     = "Plot";
-  IFileName = path + IFile + ".txt";
-  ifstream Fin(IFileName);
-
-  string Core, Erlang, Seed, BP, NoT, CpR, HTpR, TpR, LPSpR, AvgIFpR, AvgEFpR,
-      AvgHFpR, Numof400SC6, Numof400SC4, Numof400SC2, Numof200SC6, Numof200SC4,
-      Numof200SC2, Numof100SC6, Numof100SC4, Numof100SC2, Numof50SC6,
-      Numof50SC4, Numof50SC2, Numof25SC, Block400, Block100, Block40;
-  double NCore, NErlang, NSeed, NBP, NNoT, NCpR, NHTpR, NTpR, NLPSpR, NAvgIFpR,
-      NAvgEFpR, NAvgHFpR, NNumof400SC6, NNumof400SC4, NNumof400SC2,
-      NNumof200SC6, NNumof200SC4, NNumof200SC2, NNumof100SC6, NNumof100SC4,
-      NNumof100SC2, NNumof50SC6, NNumof50SC4, NNumof50SC2, NNumof25SC,
-      NBlock400, NBlock100, NBlock40;
-  vector<vector<vector<double>>> BParray, NoTarray, CpRarray, HTpRarray,
-      TpRarray, LPSpRarray, AvgIFpRarray, AvgEFpRarray, AvgHFpRarray,
-      Numof400SC6array, Numof400SC4array, Numof400SC2array, Numof200SC6array,
-      Numof200SC4array, Numof200SC2array, Numof100SC6array, Numof100SC4array,
-      Numof100SC2array, Numof50SC6array, Numof50SC4array, Numof50SC2array,
-      Numof25SCarray, Block400array, Block100array, Block40array;
-  vector<vector<double>> XBParray, XNoTarray, XCpRarray, XHTpRarray, XTpRarray,
-      XLPSpRarray, XAvgIFpRarray, XAvgEFpRarray, XAvgHFpRarray,
-      XNumof400SC6array, XNumof400SC4array, XNumof400SC2array,
-      XNumof200SC6array, XNumof200SC4array, XNumof200SC2array,
-      XNumof100SC6array, XNumof100SC4array, XNumof100SC2array, XNumof50SC6array,
-      XNumof50SC4array, XNumof50SC2array, XNumof25SCarray, XBlock400array,
-      XBlock100array, XBlock40array;
-  vector<double> YBParray, YNoTarray, YCpRarray, YHTpRarray, YTpRarray,
-      YLPSpRarray, YAvgIFpRarray, YAvgEFpRarray, YAvgHFpRarray,
-      YNumof400SC6array, YNumof400SC4array, YNumof400SC2array,
-      YNumof200SC6array, YNumof200SC4array, YNumof200SC2array,
-      YNumof100SC6array, YNumof100SC4array, YNumof100SC2array, YNumof50SC6array,
-      YNumof50SC4array, YNumof50SC2array, YNumof25SCarray, YBlock400array,
-      YBlock100array, YBlock40array;
+  string core, erlang, seed;
 
   /*** Initialization:  {core, erlang, data1, data2, data3, ...} ***/
-  for(int i = 0; i < PotentialCore.size(); i++)
-  {
-    for(int k = 0; k < PotentialErlang.size(); k++)
-    {
-      YBParray.push_back(PotentialCore[i]);
-      YBParray.push_back(PotentialErlang[k]);
-      for(int i = 0; i < PotentialSeed.size(); i++)
-      {
-        YBParray.push_back(-1);
-      }
-      XBParray.push_back(YBParray);
-      YBParray.clear();
-
-      YNoTarray.push_back(PotentialCore[i]);
-      YNoTarray.push_back(PotentialErlang[k]);
-      for(int i = 0; i < PotentialSeed.size(); i++)
-      {
-        YNoTarray.push_back(-1);
-      }
-      XNoTarray.push_back(YNoTarray);
-      YNoTarray.clear();
-
-      YCpRarray.push_back(PotentialCore[i]);
-      YCpRarray.push_back(PotentialErlang[k]);
-      for(int i = 0; i < PotentialSeed.size(); i++)
-      {
-        YCpRarray.push_back(-1);
-      }
-      XCpRarray.push_back(YCpRarray);
-      YCpRarray.clear();
-
-      YHTpRarray.push_back(PotentialCore[i]);
-      YHTpRarray.push_back(PotentialErlang[k]);
-      for(int i = 0; i < PotentialSeed.size(); i++)
-      {
-        YHTpRarray.push_back(-1);
-      }
-      XHTpRarray.push_back(YHTpRarray);
-      YHTpRarray.clear();
-
-      YTpRarray.push_back(PotentialCore[i]);
-      YTpRarray.push_back(PotentialErlang[k]);
-      for(int i = 0; i < PotentialSeed.size(); i++)
-      {
-        YTpRarray.push_back(-1);
-      }
-      XTpRarray.push_back(YTpRarray);
-      YTpRarray.clear();
-
-      YLPSpRarray.push_back(PotentialCore[i]);
-      YLPSpRarray.push_back(PotentialErlang[k]);
-      for(int i = 0; i < PotentialSeed.size(); i++)
-      {
-        YLPSpRarray.push_back(-1);
-      }
-      XLPSpRarray.push_back(YLPSpRarray);
-      YLPSpRarray.clear();
-
-      YAvgIFpRarray.push_back(PotentialCore[i]);
-      YAvgIFpRarray.push_back(PotentialErlang[k]);
-      for(int i = 0; i < PotentialSeed.size(); i++)
-      {
-        YAvgIFpRarray.push_back(-1);
-      }
-      XAvgIFpRarray.push_back(YAvgIFpRarray);
-      YAvgIFpRarray.clear();
-
-      YAvgEFpRarray.push_back(PotentialCore[i]);
-      YAvgEFpRarray.push_back(PotentialErlang[k]);
-      for(int i = 0; i < PotentialSeed.size(); i++)
-      {
-        YAvgEFpRarray.push_back(-1);
-      }
-      XAvgEFpRarray.push_back(YAvgEFpRarray);
-      YAvgEFpRarray.clear();
-
-      YAvgHFpRarray.push_back(PotentialCore[i]);
-      YAvgHFpRarray.push_back(PotentialErlang[k]);
-      for(int i = 0; i < PotentialSeed.size(); i++)
-      {
-        YAvgHFpRarray.push_back(-1);
-      }
-      XAvgHFpRarray.push_back(YAvgHFpRarray);
-      YAvgHFpRarray.clear();
-
-      YNumof400SC6array.push_back(PotentialCore[i]);
-      YNumof400SC6array.push_back(PotentialErlang[k]);
-      for(int i = 0; i < PotentialSeed.size(); i++)
-      {
-        YNumof400SC6array.push_back(-1);
-      }
-      XNumof400SC6array.push_back(YNumof400SC6array);
-      YNumof400SC6array.clear();
-
-      YNumof400SC4array.push_back(PotentialCore[i]);
-      YNumof400SC4array.push_back(PotentialErlang[k]);
-      for(int i = 0; i < PotentialSeed.size(); i++)
-      {
-        YNumof400SC4array.push_back(-1);
-      }
-      XNumof400SC4array.push_back(YNumof400SC4array);
-      YNumof400SC4array.clear();
-
-      YNumof400SC2array.push_back(PotentialCore[i]);
-      YNumof400SC2array.push_back(PotentialErlang[k]);
-      for(int i = 0; i < PotentialSeed.size(); i++)
-      {
-        YNumof400SC2array.push_back(-1);
-      }
-      XNumof400SC2array.push_back(YNumof400SC2array);
-      YNumof400SC2array.clear();
-
-      YNumof200SC6array.push_back(PotentialCore[i]);
-      YNumof200SC6array.push_back(PotentialErlang[k]);
-      for(int i = 0; i < PotentialSeed.size(); i++)
-      {
-        YNumof200SC6array.push_back(-1);
-      }
-      XNumof200SC6array.push_back(YNumof200SC6array);
-      YNumof200SC6array.clear();
-
-      YNumof200SC4array.push_back(PotentialCore[i]);
-      YNumof200SC4array.push_back(PotentialErlang[k]);
-      for(int i = 0; i < PotentialSeed.size(); i++)
-      {
-        YNumof200SC4array.push_back(-1);
-      }
-      XNumof200SC4array.push_back(YNumof200SC4array);
-      YNumof200SC4array.clear();
-
-      YNumof200SC2array.push_back(PotentialCore[i]);
-      YNumof200SC2array.push_back(PotentialErlang[k]);
-      for(int i = 0; i < PotentialSeed.size(); i++)
-      {
-        YNumof200SC2array.push_back(-1);
-      }
-      XNumof200SC2array.push_back(YNumof200SC2array);
-      YNumof200SC2array.clear();
-
-      YNumof100SC6array.push_back(PotentialCore[i]);
-      YNumof100SC6array.push_back(PotentialErlang[k]);
-      for(int i = 0; i < PotentialSeed.size(); i++)
-      {
-        YNumof100SC6array.push_back(-1);
-      }
-      XNumof100SC6array.push_back(YNumof100SC6array);
-      YNumof100SC6array.clear();
-
-      YNumof100SC4array.push_back(PotentialCore[i]);
-      YNumof100SC4array.push_back(PotentialErlang[k]);
-      for(int i = 0; i < PotentialSeed.size(); i++)
-      {
-        YNumof100SC4array.push_back(-1);
-      }
-      XNumof100SC4array.push_back(YNumof100SC4array);
-      YNumof100SC4array.clear();
-
-      YNumof100SC2array.push_back(PotentialCore[i]);
-      YNumof100SC2array.push_back(PotentialErlang[k]);
-      for(int i = 0; i < PotentialSeed.size(); i++)
-      {
-        YNumof100SC2array.push_back(-1);
-      }
-      XNumof100SC2array.push_back(YNumof100SC2array);
-      YNumof100SC2array.clear();
-
-      YNumof50SC6array.push_back(PotentialCore[i]);
-      YNumof50SC6array.push_back(PotentialErlang[k]);
-      for(int i = 0; i < PotentialSeed.size(); i++)
-      {
-        YNumof50SC6array.push_back(-1);
-      }
-      XNumof50SC6array.push_back(YNumof50SC6array);
-      YNumof50SC6array.clear();
-
-      YNumof50SC4array.push_back(PotentialCore[i]);
-      YNumof50SC4array.push_back(PotentialErlang[k]);
-      for(int i = 0; i < PotentialSeed.size(); i++)
-      {
-        YNumof50SC4array.push_back(-1);
-      }
-      XNumof50SC4array.push_back(YNumof50SC4array);
-      YNumof50SC4array.clear();
-
-      YNumof50SC2array.push_back(PotentialCore[i]);
-      YNumof50SC2array.push_back(PotentialErlang[k]);
-      for(int i = 0; i < PotentialSeed.size(); i++)
-      {
-        YNumof50SC2array.push_back(-1);
-      }
-      XNumof50SC2array.push_back(YNumof50SC2array);
-      YNumof50SC2array.clear();
-
-      YNumof25SCarray.push_back(PotentialCore[i]);
-      YNumof25SCarray.push_back(PotentialErlang[k]);
-      for(int i = 0; i < PotentialSeed.size(); i++)
-      {
-        YNumof25SCarray.push_back(-1);
-      }
-      XNumof25SCarray.push_back(YNumof25SCarray);
-      YNumof25SCarray.clear();
-
-      YBlock400array.push_back(PotentialCore[i]);
-      YBlock400array.push_back(PotentialErlang[k]);
-      for(int i = 0; i < PotentialSeed.size(); i++)
-      {
-        YBlock400array.push_back(-1);
-      }
-      XBlock400array.push_back(YBlock400array);
-      YBlock400array.clear();
-
-      YBlock100array.push_back(PotentialCore[i]);
-      YBlock100array.push_back(PotentialErlang[k]);
-      for(int i = 0; i < PotentialSeed.size(); i++)
-      {
-        YBlock100array.push_back(-1);
-      }
-      XBlock100array.push_back(YBlock100array);
-      YBlock100array.clear();
-
-      YBlock40array.push_back(PotentialCore[i]);
-      YBlock40array.push_back(PotentialErlang[k]);
-      for(int i = 0; i < PotentialSeed.size(); i++)
-      {
-        YBlock40array.push_back(-1);
-      }
-      XBlock40array.push_back(YBlock40array);
-      YBlock40array.clear();
-    }
-    BParray.push_back(XBParray);
-    XBParray.clear();
-
-    NoTarray.push_back(XNoTarray);
-    XNoTarray.clear();
-
-    CpRarray.push_back(XCpRarray);
-    XCpRarray.clear();
-
-    HTpRarray.push_back(XHTpRarray);
-    XHTpRarray.clear();
-
-    TpRarray.push_back(XTpRarray);
-    XTpRarray.clear();
-
-    LPSpRarray.push_back(XLPSpRarray);
-    XLPSpRarray.clear();
-
-    AvgIFpRarray.push_back(XAvgIFpRarray);
-    XAvgIFpRarray.clear();
-
-    AvgEFpRarray.push_back(XAvgEFpRarray);
-    XAvgEFpRarray.clear();
-
-    AvgHFpRarray.push_back(XAvgHFpRarray);
-    XAvgHFpRarray.clear();
-
-    Numof400SC6array.push_back(XNumof400SC6array);
-    XNumof400SC6array.clear();
-
-    Numof400SC4array.push_back(XNumof400SC4array);
-    XNumof400SC4array.clear();
-
-    Numof400SC2array.push_back(XNumof400SC2array);
-    XNumof400SC2array.clear();
-
-    Numof200SC6array.push_back(XNumof200SC6array);
-    XNumof200SC6array.clear();
-
-    Numof200SC4array.push_back(XNumof200SC4array);
-    XNumof200SC4array.clear();
-
-    Numof200SC2array.push_back(XNumof200SC2array);
-    XNumof200SC2array.clear();
-
-    Numof100SC6array.push_back(XNumof100SC6array);
-    XNumof100SC6array.clear();
-
-    Numof100SC4array.push_back(XNumof100SC4array);
-    XNumof100SC4array.clear();
-
-    Numof100SC2array.push_back(XNumof100SC2array);
-    XNumof100SC2array.clear();
-
-    Numof50SC6array.push_back(XNumof50SC6array);
-    XNumof50SC6array.clear();
-
-    Numof50SC4array.push_back(XNumof50SC4array);
-    XNumof50SC4array.clear();
-
-    Numof50SC2array.push_back(XNumof50SC2array);
-    XNumof50SC2array.clear();
-
-    Numof25SCarray.push_back(XNumof25SCarray);
-    XNumof25SCarray.clear();
-
-    Block400array.push_back(XBlock400array);
-    XBlock400array.clear();
-
-    Block100array.push_back(XBlock100array);
-    XBlock100array.clear();
-
-    Block40array.push_back(XBlock40array);
-    XBlock40array.clear();
-  }
+  initialization(&BP);
+  initialization(&NoT);
+  initialization(&CpR);
+  initialization(&HTpR);
+  initialization(&TpR);
+  initialization(&LPSpR);
+  initialization(&AvgIFpR);
+  initialization(&AvgEFpR);
+  initialization(&AvgHFpR);
+  initialization(&Numof400SC6);
+  initialization(&Numof400SC4);
+  initialization(&Numof400SC2);
+  initialization(&Numof200SC6);
+  initialization(&Numof200SC4);
+  initialization(&Numof200SC2);
+  initialization(&Numof100SC6);
+  initialization(&Numof100SC4);
+  initialization(&Numof100SC2);
+  initialization(&Numof50SC6);
+  initialization(&Numof50SC4);
+  initialization(&Numof50SC2);
+  initialization(&Numof25SC);
+  initialization(&Block400);
+  initialization(&Block100);
+  initialization(&Block40);
+  initialization(&BlockAR);
+  initialization(&BlockIR);
+  initialization(&Block400AR);
+  initialization(&Block400IR);
+  initialization(&Block100AR);
+  initialization(&Block100IR);
+  initialization(&Block40AR);
+  initialization(&Block40IR);
 
   /*** Extract data from file ***/
   string str_in;
-  while(Fin >> str_in)
+  while(inputFile >> str_in)
   {
     vector<string> arr_strings = string_split(str_in, ",");
-    int            CoreCnt     = 0;
-    int            ErlangCnt   = 0;
-    int            SeedCnt     = 0;
 
-    Core        = arr_strings[0];
-    Erlang      = arr_strings[1];
-    Seed        = arr_strings[2];
-    BP          = arr_strings[3];
-    NoT         = arr_strings[4];
-    CpR         = arr_strings[5];
-    HTpR        = arr_strings[6];
-    TpR         = arr_strings[7];
-    LPSpR       = arr_strings[8];
-    AvgIFpR     = arr_strings[9];
-    AvgEFpR     = arr_strings[10];
-    AvgHFpR     = arr_strings[11];
-    Numof400SC6 = arr_strings[12];
-    Numof400SC4 = arr_strings[13];
-    Numof400SC2 = arr_strings[14];
-    Numof200SC6 = arr_strings[15];
-    Numof200SC4 = arr_strings[16];
-    Numof200SC2 = arr_strings[17];
-    Numof100SC6 = arr_strings[18];
-    Numof100SC4 = arr_strings[19];
-    Numof100SC2 = arr_strings[20];
-    Numof50SC6  = arr_strings[21];
-    Numof50SC4  = arr_strings[22];
-    Numof50SC2  = arr_strings[23];
-    Numof25SC   = arr_strings[24];
-    Block400    = arr_strings[25];
-    Block100    = arr_strings[26];
-    Block40     = arr_strings[27];
+    core   = arr_strings[0];
+    erlang = arr_strings[1];
+    seed   = arr_strings[2];
 
-    NCore        = stof(Core);
-    NErlang      = stof(Erlang);
-    NSeed        = stof(Seed);
-    NBP          = stof(BP);
-    NNoT         = stof(NoT);
-    NCpR         = stof(CpR);
-    NHTpR        = stof(HTpR);
-    NTpR         = stof(TpR);
-    NLPSpR       = stof(LPSpR);
-    NAvgIFpR     = stof(AvgIFpR);
-    NAvgEFpR     = stof(AvgEFpR);
-    NAvgHFpR     = stof(AvgHFpR);
-    NNumof400SC6 = stof(Numof400SC6);
-    NNumof400SC4 = stof(Numof400SC4);
-    NNumof400SC2 = stof(Numof400SC2);
-    NNumof200SC6 = stof(Numof200SC6);
-    NNumof200SC4 = stof(Numof200SC4);
-    NNumof200SC2 = stof(Numof200SC2);
-    NNumof100SC6 = stof(Numof100SC6);
-    NNumof100SC4 = stof(Numof100SC4);
-    NNumof100SC2 = stof(Numof100SC2);
-    NNumof50SC6  = stof(Numof50SC6);
-    NNumof50SC4  = stof(Numof50SC4);
-    NNumof50SC2  = stof(Numof50SC2);
-    NNumof25SC   = stof(Numof25SC);
-    NBlock400    = stof(Block400);
-    NBlock100    = stof(Block100);
-    NBlock40     = stof(Block40);
-
-    int intCore = floor(NCore + 0.005);
-    for(CoreCnt = 0; CoreCnt < PotentialCore.size(); CoreCnt++)
-    {
-      if(intCore == PotentialCore[CoreCnt])
-      {
-        break;
-      }
-    }
-
-    int NormErlang = floor(NErlang + 0.005) / PotentialCore[CoreCnt];
-    for(ErlangCnt = 0; ErlangCnt < PotentialErlang.size(); ErlangCnt++)
-    {
-      if(NormErlang == PotentialErlang[ErlangCnt])
-      {
-        break;
-      }
-    }
-
-    int intSeed = floor(NSeed + 0.005);
-    for(SeedCnt = 0; SeedCnt < PotentialSeed.size(); SeedCnt++)
-    {
-      if(intSeed == PotentialSeed[SeedCnt])
-        break;
-    }
-
-    // cout << " iter" << endl;
-    // cout << CoreCnt << ' ' << NCore << ' ' << intCore << endl;
-    // cout << SeedCnt << ' ' << NSeed << ' ' << intSeed << endl;
-    // for(auto i : PotentialSeed)
-    // {
-    //   cout << i << ' ';
-    // }
-    // cout << endl;
-    // cout << ErlangCnt << ' ' << NErlang << ' ' << NormErlang << endl;
-    // cout << "end " << endl;
-    BParray[CoreCnt][ErlangCnt].at(SeedCnt + 2)          = NBP;
-    NoTarray[CoreCnt][ErlangCnt].at(SeedCnt + 2)         = NNoT;
-    CpRarray[CoreCnt][ErlangCnt].at(SeedCnt + 2)         = NCpR;
-    HTpRarray[CoreCnt][ErlangCnt].at(SeedCnt + 2)        = NHTpR;
-    TpRarray[CoreCnt][ErlangCnt].at(SeedCnt + 2)         = NTpR;
-    LPSpRarray[CoreCnt][ErlangCnt].at(SeedCnt + 2)       = NLPSpR;
-    AvgIFpRarray[CoreCnt][ErlangCnt].at(SeedCnt + 2)     = NAvgIFpR;
-    AvgEFpRarray[CoreCnt][ErlangCnt].at(SeedCnt + 2)     = NAvgEFpR;
-    AvgHFpRarray[CoreCnt][ErlangCnt].at(SeedCnt + 2)     = NAvgHFpR;
-    Numof400SC6array[CoreCnt][ErlangCnt].at(SeedCnt + 2) = NNumof400SC6;
-    Numof400SC4array[CoreCnt][ErlangCnt].at(SeedCnt + 2) = NNumof400SC4;
-    Numof400SC2array[CoreCnt][ErlangCnt].at(SeedCnt + 2) = NNumof400SC2;
-    Numof200SC6array[CoreCnt][ErlangCnt].at(SeedCnt + 2) = NNumof200SC6;
-    Numof200SC4array[CoreCnt][ErlangCnt].at(SeedCnt + 2) = NNumof200SC4;
-    Numof200SC2array[CoreCnt][ErlangCnt].at(SeedCnt + 2) = NNumof200SC2;
-    Numof100SC6array[CoreCnt][ErlangCnt].at(SeedCnt + 2) = NNumof100SC6;
-    Numof100SC4array[CoreCnt][ErlangCnt].at(SeedCnt + 2) = NNumof100SC4;
-    Numof100SC2array[CoreCnt][ErlangCnt].at(SeedCnt + 2) = NNumof100SC2;
-    Numof50SC6array[CoreCnt][ErlangCnt].at(SeedCnt + 2)  = NNumof50SC6;
-    Numof50SC4array[CoreCnt][ErlangCnt].at(SeedCnt + 2)  = NNumof50SC4;
-    Numof50SC2array[CoreCnt][ErlangCnt].at(SeedCnt + 2)  = NNumof50SC2;
-    Numof25SCarray[CoreCnt][ErlangCnt].at(SeedCnt + 2)   = NNumof25SC;
-    Block400array[CoreCnt][ErlangCnt].at(SeedCnt + 2)    = NBlock400;
-    Block100array[CoreCnt][ErlangCnt].at(SeedCnt + 2)    = NBlock100;
-    Block40array[CoreCnt][ErlangCnt].at(SeedCnt + 2)     = NBlock40;
-
-    // cout << str_in << endl;
+    extraction(arr_strings[3], &BP, core, erlang, seed);
+    extraction(arr_strings[4], &NoT, core, erlang, seed);
+    extraction(arr_strings[5], &CpR, core, erlang, seed);
+    extraction(arr_strings[6], &HTpR, core, erlang, seed);
+    extraction(arr_strings[7], &TpR, core, erlang, seed);
+    extraction(arr_strings[8], &LPSpR, core, erlang, seed);
+    extraction(arr_strings[9], &AvgIFpR, core, erlang, seed);
+    extraction(arr_strings[10], &AvgEFpR, core, erlang, seed);
+    extraction(arr_strings[11], &AvgHFpR, core, erlang, seed);
+    extraction(arr_strings[12], &Numof400SC6, core, erlang, seed);
+    extraction(arr_strings[13], &Numof400SC4, core, erlang, seed);
+    extraction(arr_strings[14], &Numof400SC2, core, erlang, seed);
+    extraction(arr_strings[15], &Numof200SC6, core, erlang, seed);
+    extraction(arr_strings[16], &Numof200SC4, core, erlang, seed);
+    extraction(arr_strings[17], &Numof200SC2, core, erlang, seed);
+    extraction(arr_strings[18], &Numof100SC6, core, erlang, seed);
+    extraction(arr_strings[19], &Numof100SC4, core, erlang, seed);
+    extraction(arr_strings[20], &Numof100SC2, core, erlang, seed);
+    extraction(arr_strings[21], &Numof50SC6, core, erlang, seed);
+    extraction(arr_strings[22], &Numof50SC4, core, erlang, seed);
+    extraction(arr_strings[23], &Numof50SC2, core, erlang, seed);
+    extraction(arr_strings[24], &Numof25SC, core, erlang, seed);
+    extraction(arr_strings[25], &Block400, core, erlang, seed);
+    extraction(arr_strings[26], &Block100, core, erlang, seed);
+    extraction(arr_strings[27], &Block40, core, erlang, seed);
+    extraction(arr_strings[28], &BlockAR, core, erlang, seed);
+    extraction(arr_strings[29], &BlockIR, core, erlang, seed);
+    extraction(arr_strings[30], &Block400AR, core, erlang, seed);
+    extraction(arr_strings[31], &Block400IR, core, erlang, seed);
+    extraction(arr_strings[32], &Block100AR, core, erlang, seed);
+    extraction(arr_strings[33], &Block100IR, core, erlang, seed);
+    extraction(arr_strings[34], &Block40AR, core, erlang, seed);
+    extraction(arr_strings[35], &Block40IR, core, erlang, seed);
   }
+
+  /*** Print what is in BP.array ***/
+  // for(int i = 0; i < BP.array.size(); i++)
+  // {
+  //   for(int j = 0; j < BP.array[i].size(); j++)
+  //   {
+  //     for(int k = 0; k < BP.array[i][j].size(); k++)
+  //     {
+  //
+  //       cout << BP.array[i][j][k] << ' ';
+  //     }
+  //     cout << endl;
+  //   }
+  // }
+
+  /*** Compute avg of data ***/
+  avg_data(&BP);
+  avg_data(&NoT);
+  avg_data(&CpR);
+  avg_data(&HTpR);
+  avg_data(&TpR);
+  avg_data(&LPSpR);
+  avg_data(&AvgIFpR);
+  avg_data(&AvgEFpR);
+  avg_data(&AvgHFpR);
+  avg_data(&Numof400SC6);
+  avg_data(&Numof400SC4);
+  avg_data(&Numof400SC2);
+  avg_data(&Numof200SC6);
+  avg_data(&Numof200SC4);
+  avg_data(&Numof200SC2);
+  avg_data(&Numof100SC6);
+  avg_data(&Numof100SC4);
+  avg_data(&Numof100SC2);
+  avg_data(&Numof50SC6);
+  avg_data(&Numof50SC4);
+  avg_data(&Numof50SC2);
+  avg_data(&Numof25SC);
+  avg_data(&Block400);
+  avg_data(&Block100);
+  avg_data(&Block40);
+  avg_data(&BlockAR);
+  avg_data(&BlockIR);
+  avg_data(&Block400AR);
+  avg_data(&Block400IR);
+  avg_data(&Block100AR);
+  avg_data(&Block100IR);
+  avg_data(&Block40AR);
+  avg_data(&Block40IR);
 
   // *** Print what is in BParray
   // for(int i = 0; i < BParray.size(); i++)
@@ -588,371 +344,38 @@ txtParse::parse(vector<int> &PotentialCore, vector<int> &PotentialErlang,
   //   }
   // }
 
-#ifndef lala
-  /*** Compute Avg of data ***/
-  int Cnt
-      = BParray[0][0].size()
-        - 2; // Data count except Core and Erlang, equals to the number of seeds
-  for(int i = 0; i < PotentialCore.size(); i++)
-  {
-    for(int j = 0; j < PotentialErlang.size(); j++)
-    {
-      double TempBP          = 0;
-      double TempNoT         = 0;
-      double TempCpR         = 0;
-      double TempHTpR        = 0;
-      double TempTpR         = 0;
-      double TempLPSpR       = 0;
-      double TempAvgIFpR     = 0;
-      double TempAvgEFpR     = 0;
-      double TempAvgHFpR     = 0;
-      double TempNumof400SC6 = 0;
-      double TempNumof400SC4 = 0;
-      double TempNumof400SC2 = 0;
-      double TempNumof200SC6 = 0;
-      double TempNumof200SC4 = 0;
-      double TempNumof200SC2 = 0;
-      double TempNumof100SC6 = 0;
-      double TempNumof100SC4 = 0;
-      double TempNumof100SC2 = 0;
-      double TempNumof50SC6  = 0;
-      double TempNumof50SC4  = 0;
-      double TempNumof50SC2  = 0;
-      double TempNumof25SC   = 0;
-      double TempBlock400    = 0;
-      double TempBlock100    = 0;
-      double TempBlock40     = 0;
-
-      for(int k = 2; k < 2 + Cnt; k++)
-      {
-        TempBP += BParray[i][j][k];
-        TempNoT += NoTarray[i][j][k];
-        TempCpR += CpRarray[i][j][k];
-        TempHTpR += HTpRarray[i][j][k];
-        TempTpR += TpRarray[i][j][k];
-        TempLPSpR += LPSpRarray[i][j][k];
-        TempAvgIFpR += AvgIFpRarray[i][j][k];
-        TempAvgEFpR += AvgEFpRarray[i][j][k];
-        TempAvgHFpR += AvgHFpRarray[i][j][k];
-        TempNumof400SC6 += Numof400SC6array[i][j][k];
-        TempNumof400SC4 += Numof400SC4array[i][j][k];
-        TempNumof400SC2 += Numof400SC2array[i][j][k];
-        TempNumof200SC6 += Numof200SC6array[i][j][k];
-        TempNumof200SC4 += Numof200SC4array[i][j][k];
-        TempNumof200SC2 += Numof200SC2array[i][j][k];
-        TempNumof100SC6 += Numof100SC6array[i][j][k];
-        TempNumof100SC4 += Numof100SC4array[i][j][k];
-        TempNumof100SC2 += Numof100SC2array[i][j][k];
-        TempNumof50SC6 += Numof50SC6array[i][j][k];
-        TempNumof50SC4 += Numof50SC4array[i][j][k];
-        TempNumof50SC2 += Numof50SC2array[i][j][k];
-        TempNumof25SC += Numof25SCarray[i][j][k];
-        TempBlock400 += Block400array[i][j][k];
-        TempBlock100 += Block100array[i][j][k];
-        TempBlock40 += Block40array[i][j][k];
-      }
-
-      TempBP          = TempBP / Cnt;
-      TempNoT         = TempNoT / Cnt;
-      TempCpR         = TempCpR / Cnt;
-      TempHTpR        = TempHTpR / Cnt;
-      TempTpR         = TempTpR / Cnt;
-      TempLPSpR       = TempLPSpR / Cnt;
-      TempAvgIFpR     = TempAvgIFpR / Cnt;
-      TempAvgEFpR     = TempAvgEFpR / Cnt;
-      TempAvgHFpR     = TempAvgHFpR / Cnt;
-      TempNumof400SC6 = TempNumof400SC6 / Cnt;
-      TempNumof400SC4 = TempNumof400SC4 / Cnt;
-      TempNumof400SC2 = TempNumof400SC2 / Cnt;
-      TempNumof200SC6 = TempNumof200SC6 / Cnt;
-      TempNumof200SC4 = TempNumof200SC4 / Cnt;
-      TempNumof200SC2 = TempNumof200SC2 / Cnt;
-      TempNumof100SC6 = TempNumof100SC6 / Cnt;
-      TempNumof100SC4 = TempNumof100SC4 / Cnt;
-      TempNumof100SC2 = TempNumof100SC2 / Cnt;
-      TempNumof50SC6  = TempNumof50SC6 / Cnt;
-      TempNumof50SC4  = TempNumof50SC4 / Cnt;
-      TempNumof50SC2  = TempNumof50SC2 / Cnt;
-      TempNumof25SC   = TempNumof25SC / Cnt;
-      TempBlock400    = TempBlock400 / Cnt;
-      TempBlock100    = TempBlock100 / Cnt;
-      TempBlock40     = TempBlock40 / Cnt;
-
-      BParray[i][j].push_back(TempBP);
-      NoTarray[i][j].push_back(TempNoT);
-      CpRarray[i][j].push_back(TempCpR);
-      HTpRarray[i][j].push_back(TempHTpR);
-      TpRarray[i][j].push_back(TempTpR);
-      LPSpRarray[i][j].push_back(TempLPSpR);
-      AvgIFpRarray[i][j].push_back(TempAvgIFpR);
-      AvgEFpRarray[i][j].push_back(TempAvgEFpR);
-      AvgHFpRarray[i][j].push_back(TempAvgHFpR);
-      Numof400SC6array[i][j].push_back(TempNumof400SC6);
-      Numof400SC4array[i][j].push_back(TempNumof400SC4);
-      Numof400SC2array[i][j].push_back(TempNumof400SC2);
-      Numof200SC6array[i][j].push_back(TempNumof200SC6);
-      Numof200SC4array[i][j].push_back(TempNumof200SC4);
-      Numof200SC2array[i][j].push_back(TempNumof200SC2);
-      Numof100SC6array[i][j].push_back(TempNumof100SC6);
-      Numof100SC4array[i][j].push_back(TempNumof100SC4);
-      Numof100SC2array[i][j].push_back(TempNumof100SC2);
-      Numof50SC6array[i][j].push_back(TempNumof50SC6);
-      Numof50SC4array[i][j].push_back(TempNumof50SC4);
-      Numof50SC2array[i][j].push_back(TempNumof50SC2);
-      Numof25SCarray[i][j].push_back(TempNumof25SC);
-      Block400array[i][j].push_back(TempBlock400);
-      Block100array[i][j].push_back(TempBlock100);
-      Block40array[i][j].push_back(TempBlock40);
-    }
-  }
-
-  // *** Print what is in BParray
-  // for(int i = 0; i < BParray.size(); i++)
-  // {
-  //   for(int j = 0; j < BParray[i].size(); j++)
-  //   {
-  //     for(int k = 0; k < BParray[i][j].size(); k++)
-  //     {
-  //
-  //       cout << BParray[i][j][k] << ' ';
-  //     }
-  //   cout << endl;
-  //   }
-  // }
-
-  OFileName1  = path + IFile + "_BP.csv";
-  OFileName2  = path + IFile + "_NoT.csv";
-  OFileName3  = path + IFile + "_CpR.csv";
-  OFileName4  = path + IFile + "_HTpR.csv";
-  OFileName5  = path + IFile + "_TpR.csv";
-  OFileName6  = path + IFile + "_LPSpR.csv";
-  OFileName7  = path + IFile + "_AvgIFpR.csv";
-  OFileName8  = path + IFile + "_AvgEFpR.csv";
-  OFileName9  = path + IFile + "_AvgHFpR.csv";
-  OFileName10 = path + IFile + "_Numof400SC6.csv";
-  OFileName11 = path + IFile + "_Numof400SC4.csv";
-  OFileName12 = path + IFile + "_Numof400SC2.csv";
-  OFileName13 = path + IFile + "_Numof200SC6.csv";
-  OFileName14 = path + IFile + "_Numof200SC4.csv";
-  OFileName15 = path + IFile + "_Numof200SC2.csv";
-  OFileName16 = path + IFile + "_Numof100SC6.csv";
-  OFileName17 = path + IFile + "_Numof100SC4.csv";
-  OFileName18 = path + IFile + "_Numof100SC2.csv";
-  OFileName19 = path + IFile + "_Numof50SC6.csv";
-  OFileName20 = path + IFile + "_Numof50SC4.csv";
-  OFileName21 = path + IFile + "_Numof50SC2.csv";
-  OFileName22 = path + IFile + "_Numof25SC.csv";
-  OFileName23 = path + IFile + "_Block400.csv";
-  OFileName24 = path + IFile + "_Block100.csv";
-  OFileName25 = path + IFile + "_Block40.csv";
-
-  ofstream Fbp(OFileName1);
-  ofstream Fnot(OFileName2);
-  ofstream Fcpr(OFileName3);
-  ofstream Fhtpr(OFileName4);
-  ofstream Ftpr(OFileName5);
-  ofstream Fgbpr(OFileName6);
-  ofstream Favgifpr(OFileName7);
-  ofstream Favgefpr(OFileName8);
-  ofstream Favghfpr(OFileName9);
-  ofstream Fnumof400sc6(OFileName10);
-  ofstream Fnumof400sc4(OFileName11);
-  ofstream Fnumof400sc2(OFileName12);
-  ofstream Fnumof200sc6(OFileName13);
-  ofstream Fnumof200sc4(OFileName14);
-  ofstream Fnumof200sc2(OFileName15);
-  ofstream Fnumof100sc6(OFileName16);
-  ofstream Fnumof100sc4(OFileName17);
-  ofstream Fnumof100sc2(OFileName18);
-  ofstream Fnumof50sc6(OFileName19);
-  ofstream Fnumof50sc4(OFileName20);
-  ofstream Fnumof50sc2(OFileName21);
-  ofstream Fnumof25sc(OFileName22);
-  ofstream Fblock400(OFileName23);
-  ofstream Fblock100(OFileName24);
-  ofstream Fblock40(OFileName25);
-
-  string Sseed;
-  for(int i = 0; i < PotentialSeed.size(); i++)
-  {
-    Sseed = Sseed + to_string(PotentialSeed[i]) + ',';
-  }
-  Sseed = Sseed + '\n';
-  Fbp << Sseed;
-  Fnot << Sseed;
-  Fcpr << Sseed;
-  Fhtpr << Sseed;
-  Ftpr << Sseed;
-  Fgbpr << Sseed;
-  Favgifpr << Sseed;
-  Favgefpr << Sseed;
-  Favghfpr << Sseed;
-  Fnumof400sc6 << Sseed;
-  Fnumof400sc4 << Sseed;
-  Fnumof400sc2 << Sseed;
-  Fnumof200sc6 << Sseed;
-  Fnumof200sc4 << Sseed;
-  Fnumof200sc2 << Sseed;
-  Fnumof100sc6 << Sseed;
-  Fnumof100sc4 << Sseed;
-  Fnumof100sc2 << Sseed;
-  Fnumof50sc6 << Sseed;
-  Fnumof50sc4 << Sseed;
-  Fnumof50sc2 << Sseed;
-  Fnumof25sc << Sseed;
-  Fblock400 << Sseed;
-  Fblock100 << Sseed;
-  Fblock40 << Sseed;
-
-  for(int i = 0; i < BParray.size(); i++)
-  {
-    for(int j = 0; j < BParray[i].size(); j++)
-    {
-      string Sbp;
-      string Snot;
-      string Scpr;
-      string Shtpr;
-      string Stpr;
-      string Sgbpr;
-      string Savgifpr;
-      string Savgefpr;
-      string Savghfpr;
-      string Snumof400sc6;
-      string Snumof400sc4;
-      string Snumof400sc2;
-      string Snumof200sc6;
-      string Snumof200sc4;
-      string Snumof200sc2;
-      string Snumof100sc6;
-      string Snumof100sc4;
-      string Snumof100sc2;
-      string Snumof50sc6;
-      string Snumof50sc4;
-      string Snumof50sc2;
-      string Snumof25sc;
-      string Sblock400;
-      string Sblock100;
-      string Sblock40;
-
-      for(int k = 0; k < BParray[i][j].size(); k++)
-      {
-        Sbp      = Sbp + to_string(BParray[i][j][k]) + ',';
-        Snot     = Snot + to_string(NoTarray[i][j][k]) + ',';
-        Scpr     = Scpr + to_string(CpRarray[i][j][k]) + ',';
-        Shtpr    = Shtpr + to_string(HTpRarray[i][j][k]) + ',';
-        Stpr     = Stpr + to_string(TpRarray[i][j][k]) + ',';
-        Sgbpr    = Sgbpr + to_string(LPSpRarray[i][j][k]) + ',';
-        Savgifpr = Savgifpr + to_string(AvgIFpRarray[i][j][k]) + ',';
-        Savgefpr = Savgefpr + to_string(AvgEFpRarray[i][j][k]) + ',';
-        Savghfpr = Savghfpr + to_string(AvgHFpRarray[i][j][k]) + ',';
-        Snumof400sc6
-            = Snumof400sc6 + to_string(Numof400SC6array[i][j][k]) + ',';
-        Snumof400sc4
-            = Snumof400sc4 + to_string(Numof400SC4array[i][j][k]) + ',';
-        Snumof400sc2
-            = Snumof400sc2 + to_string(Numof400SC2array[i][j][k]) + ',';
-        Snumof200sc6
-            = Snumof200sc6 + to_string(Numof200SC6array[i][j][k]) + ',';
-        Snumof200sc4
-            = Snumof200sc4 + to_string(Numof200SC4array[i][j][k]) + ',';
-        Snumof200sc2
-            = Snumof200sc2 + to_string(Numof200SC2array[i][j][k]) + ',';
-        Snumof100sc6
-            = Snumof100sc6 + to_string(Numof100SC6array[i][j][k]) + ',';
-        Snumof100sc4
-            = Snumof100sc4 + to_string(Numof100SC4array[i][j][k]) + ',';
-        Snumof100sc2
-            = Snumof100sc2 + to_string(Numof100SC2array[i][j][k]) + ',';
-        Snumof50sc6 = Snumof50sc6 + to_string(Numof50SC6array[i][j][k]) + ',';
-        Snumof50sc4 = Snumof50sc4 + to_string(Numof50SC4array[i][j][k]) + ',';
-        Snumof50sc2 = Snumof50sc2 + to_string(Numof50SC2array[i][j][k]) + ',';
-        Snumof25sc  = Snumof25sc + to_string(Numof25SCarray[i][j][k]) + ',';
-        Sblock400   = Sblock400 + to_string(Block400array[i][j][k]) + ',';
-        Sblock100   = Sblock100 + to_string(Block100array[i][j][k]) + ',';
-        Sblock40    = Sblock40 + to_string(Block40array[i][j][k]) + ',';
-      }
-
-      Sbp          = Sbp + '\n';
-      Snot         = Snot + '\n';
-      Scpr         = Scpr + '\n';
-      Shtpr        = Shtpr + '\n';
-      Stpr         = Stpr + '\n';
-      Sgbpr        = Sgbpr + '\n';
-      Savgifpr     = Savgifpr + '\n';
-      Savgefpr     = Savgefpr + '\n';
-      Savghfpr     = Savghfpr + '\n';
-      Snumof400sc6 = Snumof400sc6 + '\n';
-      Snumof400sc4 = Snumof400sc4 + '\n';
-      Snumof400sc2 = Snumof400sc2 + '\n';
-      Snumof200sc6 = Snumof200sc6 + '\n';
-      Snumof200sc4 = Snumof200sc4 + '\n';
-      Snumof200sc2 = Snumof200sc2 + '\n';
-      Snumof100sc6 = Snumof100sc6 + '\n';
-      Snumof100sc4 = Snumof100sc4 + '\n';
-      Snumof100sc2 = Snumof100sc2 + '\n';
-      Snumof50sc6  = Snumof50sc6 + '\n';
-      Snumof50sc4  = Snumof50sc4 + '\n';
-      Snumof50sc2  = Snumof50sc2 + '\n';
-      Snumof25sc   = Snumof25sc + '\n';
-      Sblock400    = Sblock400 + '\n';
-      Sblock100    = Sblock100 + '\n';
-      Sblock40     = Sblock40 + '\n';
-
-      cout << "Will be written in to file" << endl;
-      cout << Sbp << endl;
-
-      Fbp << Sbp;
-      Fnot << Snot;
-      Fcpr << Scpr;
-      Fhtpr << Shtpr;
-      Ftpr << Stpr;
-      Fgbpr << Sgbpr;
-      Favgifpr << Savgifpr;
-      Favgefpr << Savgefpr;
-      Favghfpr << Savghfpr;
-      Fnumof400sc6 << Snumof400sc6;
-      Fnumof400sc4 << Snumof400sc4;
-      Fnumof400sc2 << Snumof400sc2;
-      Fnumof200sc6 << Snumof200sc6;
-      Fnumof200sc4 << Snumof200sc4;
-      Fnumof200sc2 << Snumof200sc2;
-      Fnumof100sc6 << Snumof100sc6;
-      Fnumof100sc4 << Snumof100sc4;
-      Fnumof100sc2 << Snumof100sc2;
-      Fnumof50sc6 << Snumof50sc6;
-      Fnumof50sc4 << Snumof50sc4;
-      Fnumof50sc2 << Snumof50sc2;
-      Fnumof25sc << Snumof25sc;
-      Fblock400 << Sblock400;
-      Fblock100 << Sblock100;
-      Fblock40 << Sblock40;
-    }
-  }
-
-  Fbp.close();
-  Fnot.close();
-  Fcpr.close();
-  Fhtpr.close();
-  Ftpr.close();
-  Fgbpr.close();
-  Favgifpr.close();
-  Favgefpr.close();
-  Favghfpr.close();
-  Fnumof400sc6.close();
-  Fnumof400sc4.close();
-  Fnumof400sc2.close();
-  Fnumof200sc6.close();
-  Fnumof200sc4.close();
-  Fnumof200sc2.close();
-  Fnumof100sc6.close();
-  Fnumof100sc4.close();
-  Fnumof100sc2.close();
-  Fnumof50sc6.close();
-  Fnumof50sc4.close();
-  Fnumof50sc2.close();
-  Fnumof25sc.close();
-  Fblock400.close();
-  Fblock100.close();
-  Fblock40.close();
-#endif
+  /*** Write data to the associated file ***/
+  write_to_files(&BP);
+  write_to_files(&NoT);
+  write_to_files(&CpR);
+  write_to_files(&HTpR);
+  write_to_files(&TpR);
+  write_to_files(&LPSpR);
+  write_to_files(&AvgIFpR);
+  write_to_files(&AvgEFpR);
+  write_to_files(&AvgHFpR);
+  write_to_files(&Numof400SC6);
+  write_to_files(&Numof400SC4);
+  write_to_files(&Numof400SC2);
+  write_to_files(&Numof200SC6);
+  write_to_files(&Numof200SC4);
+  write_to_files(&Numof200SC2);
+  write_to_files(&Numof100SC6);
+  write_to_files(&Numof100SC4);
+  write_to_files(&Numof100SC2);
+  write_to_files(&Numof50SC6);
+  write_to_files(&Numof50SC4);
+  write_to_files(&Numof50SC2);
+  write_to_files(&Numof25SC);
+  write_to_files(&Block400);
+  write_to_files(&Block100);
+  write_to_files(&Block40);
+  write_to_files(&BlockAR);
+  write_to_files(&BlockIR);
+  write_to_files(&Block400AR);
+  write_to_files(&Block400IR);
+  write_to_files(&Block100AR);
+  write_to_files(&Block100IR);
+  write_to_files(&Block40AR);
+  write_to_files(&Block40IR);
 }

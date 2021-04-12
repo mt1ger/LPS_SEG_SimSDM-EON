@@ -579,7 +579,6 @@ ResourceAssignment::handle_requests(
   /**** End ONLY LPS mode ****/
 
   /**** SEG-LPS mode ****/
-#ifndef LALA
   if(availableFlag == false)
   {
     // Reset timeIter
@@ -791,7 +790,6 @@ ResourceAssignment::handle_requests(
   }
   if(snapshotsAttributes.size() > MAX_NUMOFTIMESLICES)
     availableFlag = false;
-#endif
   /**** End SEG-LPS mode ****/
 
   /**** Real allocation and printout ****/
@@ -818,12 +816,24 @@ ResourceAssignment::handle_requests(
     {
       case 40:
         network->block_40++;
+        if(circuitRequest_ptr->requestType == c_AR)
+          network->block_40AR++;
+        else
+          network->block_40IR++;
         break;
       case 100:
         network->block_100++;
+        if(circuitRequest_ptr->requestType == c_AR)
+          network->block_100AR++;
+        else
+          network->block_100IR++;
         break;
       case 400:
         network->block_400++;
+        if(circuitRequest_ptr->requestType == c_AR)
+          network->block_400AR++;
+        else
+          network->block_400IR++;
         break;
     }
   }

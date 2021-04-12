@@ -48,7 +48,6 @@ main()
 
   unsigned int   cnt = 0;
   string         Filename;
-  txtParse       txtparse;
   vector<string> FolderSet;
 
   Core.push_back(1);
@@ -132,7 +131,8 @@ main()
 
   for(int i = 0; i < filePaths.size(); i++)
   {
-    txtparse.parse(Core, Erlang, Seed, MU, filePaths[i]);
+    txtParse tp(Core, Erlang, Seed, filePaths[i]);
+    tp.parse();
   }
 
   return 1;
