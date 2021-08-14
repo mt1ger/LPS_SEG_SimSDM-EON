@@ -1,0 +1,2 @@
+all:
+	g++-10 txtParse.cpp main.cpp -o txtParse
