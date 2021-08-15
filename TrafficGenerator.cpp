@@ -96,11 +96,6 @@ TrafficGenerator::gen_first_request() {
       occupiedSpectralSlots, network->requestCounter, requestType);
   network->requestCounter++;
 
-  cout << network->trafficGen_numofRequests_AR << ' '
-       << network->trafficGen_numofRequests_IR << ' '
-       << network->trafficGen_numofRequests_400 << ' '
-       << network->trafficGen_numofRequests_100 << ' '
-       << network->trafficGen_numofRequests_40 << endl;
 #ifdef DEBUG_print_new_built_event
   cout << "\tNew Built event:" << endl;
   shared_ptr<CircuitRequest> request_ptr
@@ -207,11 +202,6 @@ TrafficGenerator::gen_request(double systemTime) {
 
   network->requestCounter++;
 
-  cout << network->trafficGen_numofRequests_AR << ' '
-       << network->trafficGen_numofRequests_IR << ' '
-       << network->trafficGen_numofRequests_400 << ' '
-       << network->trafficGen_numofRequests_100 << ' '
-       << network->trafficGen_numofRequests_40 << endl;
 #ifdef DEBUG_print_new_built_event
   cout << "\tNew Built event:" << endl;
   shared_ptr<CircuitRequest> request_ptr

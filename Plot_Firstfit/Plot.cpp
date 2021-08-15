@@ -40,12 +40,12 @@ main()
   // static string Path = "/Users/mt1ger/Code_Projects/Simulator/"
   //                      "LPS_SEG_SimSDM-EON/Plot_Firstfit/";
 
-  static string Exec = "/home/mt1ger/Desktop/"
-                       "LPS_SEG_SimSDM-EON/Sim_Firstfit";
-  static string Topo = "/home/mt1ger/Desktop/"
-                       "LPS_SEG_SimSDM-EON/Topology/NSF14.txt";
-  static string Path = "/home/mt1ger/Desktop/"
-                       "LPS_SEG_SimSDM-EON/Plot_Firstfit/";
+  static string Exec = "/home/mt1ger/"
+                       "woLPS_SEG_SimSDM-EON/Sim_Firstfit";
+  static string Topo = "/home/mt1ger/"
+                       "woLPS_SEG_SimSDM-EON/Topology/US24.txt";
+  static string Path = "/home/mt1ger/"
+                       "woLPS_SEG_SimSDM-EON/Plot_Firstfit/";
 
   unsigned int   cnt = 0;
   string         Filename;
@@ -54,11 +54,9 @@ main()
   Core.push_back(1);
   /* Core.push_back(2); */
   /* Core.push_back(4); */
-  /* Core.push_back(7); */
+  Core.push_back(7);
 
-  // for (int i = 100; i < 130; i += 10) {
-  for(int i = 2; i < 61; i += 2)
-  {
+  for(int i = 2; i < 143; i += 2) {
     Lambda.push_back(i);
   }
 
