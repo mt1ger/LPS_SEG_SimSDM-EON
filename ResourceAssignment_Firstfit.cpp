@@ -2,12 +2,12 @@
 #include <iostream>
 #include <string>
 
-    /***** Check available spectral slots for the first link for this time
-     * point *****/
-    void
-    ResourceAssignment::check_availability_first_link(
-        unsigned int predecessor, unsigned int successor,
-        list<vector<vector<vector<vector<bool>>>>>::iterator timeIter) {
+/***** Check available spectral slots for the first link for this time
+ * point *****/
+void
+ResourceAssignment::check_availability_first_link(
+    unsigned int predecessor, unsigned int successor,
+    list<vector<vector<vector<vector<bool>>>>>::iterator timeIter) {
 
   vector<int> availableSpecSlots_sec;
   availableSpecSlots.clear();
