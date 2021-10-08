@@ -16,7 +16,7 @@ RoutingTable::single_src_routing_table(unsigned int src)
   vector<int>         shortestPath;
   vector<vector<int>> singleSrcRoutingTable;
 
-  for(unsigned int j = 0; j < network->numofNodes; j++)
+  for(unsigned int j = 0; j < network->numNodes; j++)
   {
     if(j == src)
     {
@@ -54,7 +54,7 @@ RoutingTable::get_predecessor_list()
   topology.read_topology();
   dijkstra.ajacent_nodes(dijkstra.ajacentNodes);
 
-  for(unsigned int i = 0; i < network->numofNodes; i++)
+  for(unsigned int i = 0; i < network->numNodes; i++)
   {
     dijkstra.shortest_path(i, -1, hpredecessors);
     predecessors.push_back(hpredecessors);
@@ -63,9 +63,9 @@ RoutingTable::get_predecessor_list()
 
 #ifdef DEBUG_get_predecessor_list
   cout << endl;
-  for(unsigned int i = 0; i < network->numofNodes; i++)
+  for(unsigned int i = 0; i < network->numNodes; i++)
   {
-    for(unsigned int j = 0; j < network->numofNodes; j++)
+    for(unsigned int j = 0; j < network->numNodes; j++)
     {
       cout << ' ' << predecessors[i][j] + 1;
     }
@@ -79,7 +79,7 @@ RoutingTable::generate_routing_table()
 {
   get_predecessor_list();
 
-  for(unsigned int i = 0; i < network->numofNodes; i++)
+  for(unsigned int i = 0; i < network->numNodes; i++)
   {
     network->routingTable.push_back(single_src_routing_table(i));
   }

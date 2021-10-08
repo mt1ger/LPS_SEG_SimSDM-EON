@@ -11,7 +11,7 @@ ResourceAssignment::check_availability_first_link(
 
   vector<int> availableSpecSlots_sec;
   availableSpecSlots.clear();
-  for(unsigned int c = 0; c < network->numofCores; c++) {
+  for(unsigned int c = 0; c < network->numCores; c++) {
     for(int i = 0; i < NUMOFSPECTRALSLOTS; i++) {
       if(timeIter->at(predecessor).at(successor).at(c).at(i) == false) {
         availableSpecSlots_sec.push_back(c);
@@ -555,13 +555,13 @@ ResourceAssignment::handle_requests(
     timeCount++;
     durationCount--;
   }
-  if(LSAttributes.size() > MAX_NUMOFTIMESLICES)
+  if(LSAttributes.size() > network->maxAllowedTimeSlices)
     availableFlag = false;
 
   /** Real allocation and printout **/
   if(availableFlag == false) {
 
-    network->numofDoneRequests++;
+    network->numDoneRequests++;
 
 #ifdef DEBUG_collect_eventID_of_blocked_requests
     network->blockedRequests.push_back(circuitRequest_ptr->eventID);
@@ -650,11 +650,11 @@ ResourceAssignment::handle_requests(
     }
 
     /** Compute the maximum utilization of segments for this LPR **/
-    unsigned long int maxNumofSegments
+    unsigned long int maxSegments
         = 0; // Maximum number of segments this LPR used
     for(int i = 0; i < LSAttributes.size(); i++) {
-      if(LSAttributes.at(i).size() > maxNumofSegments) {
-        maxNumofSegments = LSAttributes.at(i).size();
+      if(LSAttributes.at(i).size() > maxSegments) {
+        maxSegments = LSAttributes.at(i).size();
       }
     }
 
@@ -687,7 +687,7 @@ ResourceAssignment::handle_requests(
              << "  MF: " << LSAttributes[i][j].mF << endl;
       }
     }
-    cout << "# of Segments: " << maxNumofSegments << endl;
+    cout << "# of Segments: " << maxSegments << endl;
     cout << "# of Time-Slices: " << LSAttributes.size() << endl;
     cout << "------------------------------------------------------------"
          << endl;
@@ -700,69 +700,69 @@ ResourceAssignment::handle_requests(
         circuitRequest_ptr->arrivalTime, circuitRequest_ptr->startTime,
         circuitRequest_ptr->duration,
         circuitRequest_ptr->startTime + circuitRequest_ptr->duration,
-        maxNumofSegments);
+        maxSegments);
     eventQueue->queue_insert(event_ptr);
 
     switch(circuitRequest_ptr->bitRate) {
       case 40:
         network->totalLPSs_40 += LSAttributes.size() - 1;
-        network->totalTransponders_40 += maxNumofSegments;
+        network->totalTransponders_40 += maxSegments;
         network->totalAllocations_40++;
         if(circuitRequest_ptr->requestType == c_AR) {
           network->totalAllocations_40AR++;
           network->totalAllocations_AR++;
-          network->totalTransponders_AR += maxNumofSegments;
-          network->totalTransponders_40AR += maxNumofSegments;
+          network->totalTransponders_AR += maxSegments;
+          network->totalTransponders_40AR += maxSegments;
           network->totalLPSs_AR += LSAttributes.size() - 1;
           network->totalLPSs_40AR += LSAttributes.size() - 1;
         }
         else {
           network->totalAllocations_40IR++;
           network->totalAllocations_IR++;
-          network->totalTransponders_IR += maxNumofSegments;
-          network->totalTransponders_40IR += maxNumofSegments;
+          network->totalTransponders_IR += maxSegments;
+          network->totalTransponders_40IR += maxSegments;
           network->totalLPSs_IR += LSAttributes.size() - 1;
           network->totalLPSs_40IR += LSAttributes.size() - 1;
         }
         break;
       case 100:
-        network->totalTransponders_100 += maxNumofSegments;
+        network->totalTransponders_100 += maxSegments;
         network->totalLPSs_100 += LSAttributes.size() - 1;
         network->totalAllocations_100++;
         if(circuitRequest_ptr->requestType == c_AR) {
           network->totalAllocations_100AR++;
           network->totalAllocations_AR++;
-          network->totalTransponders_AR += maxNumofSegments;
-          network->totalTransponders_100AR += maxNumofSegments;
+          network->totalTransponders_AR += maxSegments;
+          network->totalTransponders_100AR += maxSegments;
           network->totalLPSs_AR += LSAttributes.size() - 1;
           network->totalLPSs_100AR += LSAttributes.size() - 1;
         }
         else {
           network->totalAllocations_100IR++;
           network->totalAllocations_IR++;
-          network->totalTransponders_IR += maxNumofSegments;
-          network->totalTransponders_100IR += maxNumofSegments;
+          network->totalTransponders_IR += maxSegments;
+          network->totalTransponders_100IR += maxSegments;
           network->totalLPSs_IR += LSAttributes.size() - 1;
           network->totalLPSs_100IR += LSAttributes.size() - 1;
         }
         break;
       case 400:
-        network->totalTransponders_400 += maxNumofSegments;
+        network->totalTransponders_400 += maxSegments;
         network->totalLPSs_400 += LSAttributes.size() - 1;
         network->totalAllocations_400++;
         if(circuitRequest_ptr->requestType == c_AR) {
           network->totalAllocations_400AR++;
           network->totalAllocations_AR++;
-          network->totalTransponders_AR += maxNumofSegments;
-          network->totalTransponders_400AR += maxNumofSegments;
+          network->totalTransponders_AR += maxSegments;
+          network->totalTransponders_400AR += maxSegments;
           network->totalLPSs_AR += LSAttributes.size() - 1;
           network->totalLPSs_400AR += LSAttributes.size() - 1;
         }
         else {
           network->totalAllocations_400IR++;
           network->totalAllocations_IR++;
-          network->totalTransponders_IR += maxNumofSegments;
-          network->totalTransponders_400IR += maxNumofSegments;
+          network->totalTransponders_IR += maxSegments;
+          network->totalTransponders_400IR += maxSegments;
           network->totalLPSs_IR += LSAttributes.size() - 1;
           network->totalLPSs_400IR += LSAttributes.size() - 1;
         }
@@ -771,47 +771,47 @@ ResourceAssignment::handle_requests(
 
     // DOES NOT WORK
     if(bR == 25)
-      network->numof25SC += LSAttributes[0].size();
+      network->num25SC += LSAttributes[0].size();
     else if(bR == 50) {
       if(mF == "QPSK")
-        network->numof50SC2 += LSAttributes[0].size();
+        network->num50SC2 += LSAttributes[0].size();
       else if(mF == "16QAM")
-        network->numof50SC4 += LSAttributes[0].size();
+        network->num50SC4 += LSAttributes[0].size();
       else if(mF == "64QAM")
-        network->numof50SC6 += LSAttributes[0].size();
+        network->num50SC6 += LSAttributes[0].size();
     }
     else if(bR == 100) {
       if(mF == "QPSK")
-        network->numof100SC2 += LSAttributes[0].size();
+        network->num100SC2 += LSAttributes[0].size();
       else if(mF == "16QAM")
-        network->numof100SC4 += LSAttributes[0].size();
+        network->num100SC4 += LSAttributes[0].size();
       else if(mF == "64QAM")
-        network->numof100SC6 += LSAttributes[0].size();
+        network->num100SC6 += LSAttributes[0].size();
     }
     else if(bR == 200) {
       if(mF == "QPSK")
-        network->numof200SC2 += LSAttributes[0].size();
+        network->num200SC2 += LSAttributes[0].size();
       else if(mF == "16QAM")
-        network->numof200SC4 += LSAttributes[0].size();
+        network->num200SC4 += LSAttributes[0].size();
       else if(mF == "64QAM")
-        network->numof200SC6 += LSAttributes[0].size();
+        network->num200SC6 += LSAttributes[0].size();
     }
     else if(bR == 400) {
       if(mF == "QPSK")
-        network->numof400SC2 += LSAttributes[0].size();
+        network->num400SC2 += LSAttributes[0].size();
       else if(mF == "16QAM")
-        network->numof400SC4 += LSAttributes[0].size();
+        network->num400SC4 += LSAttributes[0].size();
       else if(mF == "64QAM")
-        network->numof400SC6 += LSAttributes[0].size();
+        network->num400SC6 += LSAttributes[0].size();
     }
 
-    network->numofAllocatedRequests++;
-    network->numofTransponders += maxNumofSegments;
-    // network->numofSSs4Data
+    network->numAllocatedRequests++;
+    network->numTransponders += maxSegments;
+    // network->numSSs4Data
     //     = (LSAttributes[0][0][4] - LSAttributes[0][0][3] + 1 -
     //     GB)
     //       * LSAttributes[0].size();
-    network->totalTransponders += maxNumofSegments;
+    network->totalTransponders += maxSegments;
     network->totalHoldingTime += circuitRequest_ptr->duration;
     // network->totalCoresUsed++;
     network->totalLPSs += LSAttributes.size() - 1;
@@ -828,15 +828,15 @@ void
 ResourceAssignment::handle_releases(
     shared_ptr<CircuitRelease> circuitRelease_ptr) {
 
-  network->numofDoneRequests++;
-  network->numofTransponders -= circuitRelease_ptr->transpondersUsed;
+  network->numDoneRequests++;
+  network->numTransponders -= circuitRelease_ptr->transpondersUsed;
 
 #ifdef PRINT_allocation_block_release
   cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
        << endl;
   cout << "Release Event ID: " << circuitRelease_ptr->eventID
        << "\tTime: " << circuitRelease_ptr->eventTime << endl;
-  cout << "Number of transpondersUsed " << network->numofTransponders << endl;
+  cout << "Number of transpondersUsed " << network->numTransponders << endl;
   cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
        << endl;
 #endif

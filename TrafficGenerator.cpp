@@ -6,14 +6,14 @@ using namespace std;
 void
 TrafficGenerator::gen_unicast_sd(unsigned int *src, unsigned int *dest) {
   do {
-    *src = uniform_rv(network->numofNodes);
+    *src = uniform_rv(network->numNodes);
   }
-  while(*src == network->numofNodes);
+  while(*src == network->numNodes);
 
   do {
-    *dest = uniform_rv(network->numofNodes);
+    *dest = uniform_rv(network->numNodes);
   }
-  while((*dest == *src) || (*dest == network->numofNodes));
+  while((*dest == *src) || (*dest == network->numNodes));
 }
 
 void
@@ -42,24 +42,24 @@ TrafficGenerator::gen_first_request() {
     while(type == 0 || type == 4);
     switch(type) {
       case 1:
-        if(network->trafficGen_numofRequests_40 > 0) {
-          network->trafficGen_numofRequests_40--;
+        if(network->trafficGen_numRequest_40 > 0) {
+          network->trafficGen_numRequest_40--;
           datasize = 40;
         }
         else
           datasize = 0;
         break;
       case 2:
-        if(network->trafficGen_numofRequests_100 > 0) {
-          network->trafficGen_numofRequests_100--;
+        if(network->trafficGen_numRequest_100 > 0) {
+          network->trafficGen_numRequest_100--;
           datasize = 100;
         }
         else
           datasize = 0;
         break;
       case 3:
-        if(network->trafficGen_numofRequests_400 > 0) {
-          network->trafficGen_numofRequests_400--;
+        if(network->trafficGen_numRequest_400 > 0) {
+          network->trafficGen_numRequest_400--;
           datasize = 400;
         }
         else
@@ -78,14 +78,14 @@ TrafficGenerator::gen_first_request() {
     }
     while(requestTypeNum == 2);
     // 0 represents IR and 1 represents AR
-    if(requestTypeNum == 1 && network->trafficGen_numofRequests_AR != 0) {
-      network->trafficGen_numofRequests_AR--;
+    if(requestTypeNum == 1 && network->trafficGen_numRequest_AR != 0) {
+      network->trafficGen_numRequest_AR--;
       requestType   = c_AR;
       bookAheadTime = (int)1 / network->mu;
       break;
     }
-    else if(requestTypeNum == 0 && network->trafficGen_numofRequests_IR != 0) {
-      network->trafficGen_numofRequests_IR--;
+    else if(requestTypeNum == 0 && network->trafficGen_numRequest_IR != 0) {
+      network->trafficGen_numRequest_IR--;
       requestType = c_IR;
       break;
     }
@@ -142,24 +142,24 @@ TrafficGenerator::gen_request(double systemTime) {
     while(type == 0 || type == 4);
     switch(type) {
       case 1:
-        if(network->trafficGen_numofRequests_40 > 0) {
-          network->trafficGen_numofRequests_40--;
+        if(network->trafficGen_numRequest_40 > 0) {
+          network->trafficGen_numRequest_40--;
           dataSize = 40;
         }
         else
           dataSize = 0;
         break;
       case 2:
-        if(network->trafficGen_numofRequests_100 > 0) {
-          network->trafficGen_numofRequests_100--;
+        if(network->trafficGen_numRequest_100 > 0) {
+          network->trafficGen_numRequest_100--;
           dataSize = 100;
         }
         else
           dataSize = 0;
         break;
       case 3:
-        if(network->trafficGen_numofRequests_400 > 0) {
-          network->trafficGen_numofRequests_400--;
+        if(network->trafficGen_numRequest_400 > 0) {
+          network->trafficGen_numRequest_400--;
           dataSize = 400;
         }
         else
@@ -179,14 +179,14 @@ TrafficGenerator::gen_request(double systemTime) {
     }
     while(requestTypeNum == 2);
     // 0 represents IR and 1 represents AR
-    if(requestTypeNum == 1 && network->trafficGen_numofRequests_AR != 0) {
-      network->trafficGen_numofRequests_AR--;
+    if(requestTypeNum == 1 && network->trafficGen_numRequest_AR != 0) {
+      network->trafficGen_numRequest_AR--;
       requestType   = c_AR;
       bookAheadTime = (int)1 / network->mu;
       break;
     }
-    else if(requestTypeNum == 0 && network->trafficGen_numofRequests_IR != 0) {
-      network->trafficGen_numofRequests_IR--;
+    else if(requestTypeNum == 0 && network->trafficGen_numRequest_IR != 0) {
+      network->trafficGen_numRequest_IR--;
       requestType = c_IR;
       break;
     }

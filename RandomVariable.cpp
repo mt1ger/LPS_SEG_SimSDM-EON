@@ -8,8 +8,8 @@ universal_rv() {
 }
 
 int
-uniform_rv(int numofNodes) {
-  return (int)(universal_rv() * numofNodes);
+uniform_rv(int numNodes) {
+  return (int)(universal_rv() * numNodes);
 }
 
 double

@@ -1,3 +1,9 @@
+/* INDICATES THE SCENARIO USED HERE:
+ * [  ] LPS
+ * [  ] SEG
+ * [  ] LPS_SEG
+ */
+
 #include "txtParse.h"
 #include <cstdlib>
 #include <fstream>
@@ -89,6 +95,31 @@ main()
       filePaths.push_back(IsoFolder);
       PlotFile = IsoFolder + "Plot.txt";
       ofstream       file(PlotFile);
+      string         titles;
+      titles
+          = "Core, Erlang, Seed, BP, maxTransponders, totalTransponders, "
+            "avgCores, avgHoldingTime, avgTransponders, avgLPSs, avgIntFrag, "
+            "avgExtFrag, avgHybridFrag, num400SC6, num400SC4, num400SC2, "
+            "num200SC6, num200SC4, num200SC2, num100SC6, num100SC4, num100SC2, "
+            "num50SC6, num50SC4, num50SC2, num25SC, totalBlocks_AR, "
+            "totalBlocks_IR, totalBlocks_400, totalBlocks_400AR, "
+            "totalBlocks_400IR, totalBlocks_100, totalBlocks_100AR, "
+            "totalBlocks_100IR, totalBlocks_40, totalBlocks_40AR, "
+            "totalBlocks_40IR, totalTransponders_AR, totalTransponders_IR, "
+            "totalTransponders_400, totalTransponders_400AR, "
+            "totalTransponders_400IR, totalTransponders_100, "
+            "totalTransponders_100AR, totalTransponders_100IR, "
+            "totalTransponders_40, totalTransponders_40AR, "
+            "totalTransponders_40IR, avgTransponders_AR, avgTransponders_IR, "
+            "avgTransponders_400, avgTransponders_400AR, "
+            "avgTransponders_400IR, avgTransponders_100, "
+            "avgTransponders_100AR, avgTransponders_100IR, avgTransponders_40, "
+            "avgTranponders_40AR, avgTransponders_40IR, avgLPSs_AR, "
+            "avgLPSs_IR, avgLPSs_400, avgLPSs_400AR, avgLPSs_400IR, "
+            "avgLPSs_100, avgLPSs_100AR, avgLPSs_100IR, avgLPSs_40, "
+            "avgLPSs_40AR, avgLPSs_40IR\n";
+      file << titles;
+
       vector<string> cmds_sec;
       for(unsigned int seed = 0; seed < NUMOFSEEDS; seed++)
       {

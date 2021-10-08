@@ -21,7 +21,7 @@ main(int argc, char *argv[]) {
 
   network = &net;
 
-  if(argc != 9) {
+  if(argc != 10) {
     cout << "Please input arguments in the following order: " << endl;
     cout << "\tThe file for network topology" << endl;
     cout << "\tThe path to store results" << endl;
@@ -30,19 +30,21 @@ main(int argc, char *argv[]) {
     cout << "\tAverage arriving rate of request (Lambda)" << endl;
     cout << "\tAverage holding time (1 / Mu)" << endl;
     cout << "\tSeed for random number generation" << endl;
-    cout << "\tAllowed number of segments" << endl;
+    cout << "\tMaximum number of light-segments for each request" << endl;
+    cout << "\tMaximum number of time slices for each request" << endl;
     cout << endl;
     exit(0);
   }
 
   strcpy(network->fileName, argv[1]);
   path                   = argv[2];
-  network->numofRequests = atol(argv[3]);
-  network->numofCores    = atoi(argv[4]);
+  network->numRequest = atol(argv[3]);
+  network->numCores    = atoi(argv[4]);
   network->lambda        = atof(argv[5]);
   network->mu            = atof(argv[6]);
   srand(atof(argv[7]));
-  network->maxAllowedSegments = atof(argv[8]);
+  network->maxLightSegments = atof(argv[8]);
+  network->maxTimeSlices    = atof(argv[9]);
 
   chrono::high_resolution_clock::time_point start;
   chrono::high_resolution_clock::time_point end;
@@ -54,7 +56,7 @@ main(int argc, char *argv[]) {
   network->simulation();
   double erlang = network->lambda / network->mu;
   double blockingProbability
-      = (double)network->totalBlocks / (double)network->numofRequests;
+      = (double)network->totalBlocks / (double)network->numRequest;
 
   fstream file_ptr;
 
@@ -62,7 +64,7 @@ main(int argc, char *argv[]) {
   // string  filePath;
   // filePath = path + "MaxSec.txt";
   // file_ptr.open(filePath, fstream::app);
-  // file_ptr << to_string(network->maxNumofSegments) + ' ';
+  // file_ptr << to_string(network->maxSegments) + ' ';
   // file_ptr.close();
   // ??? End
 
@@ -70,26 +72,26 @@ main(int argc, char *argv[]) {
   resultFile = path + "Plot.txt";
   file_ptr.open(resultFile, fstream::app);
   string plot
-      = to_string(network->numofCores) + ',' + to_string(erlang) + ',' + argv[7]
+      = to_string(network->numCores) + ',' + to_string(erlang) + ',' + argv[7]
         + ',' + to_string(blockingProbability) + ','
-        + to_string(network->maxNumofTransponders) + ','
+        + to_string(network->maxTransponders) + ','
         + to_string(network->totalTransponders) + ','
-        + to_string(network->avgCoresUsed) + ','
-        + to_string(network->avgHoldingTime) + ',' + to_string(network->TpR)
+        + to_string(network->avgCores) + ','
+        + to_string(network->avgHoldingTime) + ',' + to_string(network->avgTransponders)
         + ',' + to_string(network->LPSspR) + ','
         + to_string(network->avgIntFrag) + ',' + to_string(network->avgExtFrag)
         + ',' + to_string(network->avgHybridFrag) + ','
-        + to_string(network->numof400SC6) + ','
-        + to_string(network->numof400SC4) + ','
-        + to_string(network->numof400SC2) + ','
-        + to_string(network->numof200SC6) + ','
-        + to_string(network->numof200SC4) + ','
-        + to_string(network->numof200SC2) + ','
-        + to_string(network->numof100SC6) + ','
-        + to_string(network->numof100SC4) + ','
-        + to_string(network->numof100SC2) + ',' + to_string(network->numof50SC6)
-        + ',' + to_string(network->numof50SC4) + ','
-        + to_string(network->numof50SC2) + ',' + to_string(network->numof25SC)
+        + to_string(network->num400SC6) + ','
+        + to_string(network->num400SC4) + ','
+        + to_string(network->num400SC2) + ','
+        + to_string(network->num200SC6) + ','
+        + to_string(network->num200SC4) + ','
+        + to_string(network->num200SC2) + ','
+        + to_string(network->num100SC6) + ','
+        + to_string(network->num100SC4) + ','
+        + to_string(network->num100SC2) + ',' + to_string(network->num50SC6)
+        + ',' + to_string(network->num50SC4) + ','
+        + to_string(network->num50SC2) + ',' + to_string(network->num25SC)
         + ',' + to_string(network->totalBlocks_AR) + ','
         + to_string(network->totalBlocks_IR) + ','
         + to_string(network->totalBlocks_400) + ','
@@ -112,13 +114,13 @@ main(int argc, char *argv[]) {
         + to_string(network->totalTransponders_40) + ','
         + to_string(network->totalTransponders_40AR) + ','
         + to_string(network->totalTransponders_40IR) + ','
-        + to_string(network->TpR_AR) + ',' + to_string(network->TpR_IR) + ','
-        + to_string(network->TpR_400) + ',' + to_string(network->TpR_400AR)
-        + ',' + to_string(network->TpR_400IR) + ','
-        + to_string(network->TpR_100) + ',' + to_string(network->TpR_100AR)
-        + ',' + to_string(network->TpR_100IR) + ',' + to_string(network->TpR_40)
-        + ',' + to_string(network->TpR_40AR) + ','
-        + to_string(network->TpR_40IR) + ',' + to_string(network->totalLPSs_AR)
+        + to_string(network->avgTransponders_AR) + ',' + to_string(network->avgTransponders_IR) + ','
+        + to_string(network->avgTransponders_400) + ',' + to_string(network->avgTransponders_400AR)
+        + ',' + to_string(network->avgTransponders_400IR) + ','
+        + to_string(network->avgTransponders_100) + ',' + to_string(network->avgTransponders_100AR)
+        + ',' + to_string(network->avgTransponders_100IR) + ',' + to_string(network->avgTransponders_40)
+        + ',' + to_string(network->avgTransponders_40AR) + ','
+        + to_string(network->avgTransponders_40IR) + ',' + to_string(network->totalLPSs_AR)
         + ',' + to_string(network->totalLPSs_IR) + ','
         + to_string(network->totalLPSs_400) + ','
         + to_string(network->totalLPSs_400AR) + ','

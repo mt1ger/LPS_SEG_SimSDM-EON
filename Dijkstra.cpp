@@ -20,9 +20,9 @@ Dijkstra::ajacent_nodes(vector<vector<int>> &ajacentNodes)
 {
   vector<int> ajecentNodes_sec;
 
-  for(unsigned int i = 0; i < network->numofNodes; i++)
+  for(unsigned int i = 0; i < network->numNodes; i++)
   {
-    for(unsigned int j = 0; j < network->numofNodes; j++)
+    for(unsigned int j = 0; j < network->numNodes; j++)
     {
       if(!compare_double(network->nodesWeight[i][j], -1) && (j != i))
         ajecentNodes_sec.push_back(j);
@@ -43,7 +43,7 @@ Dijkstra::shortest_path(int src, int dest, vector<int> &predecessors)
   unsigned int   minDist;
 
   // To initialize the Algorithm:
-  for(unsigned int i = 0; i < network->numofNodes; i++)
+  for(unsigned int i = 0; i < network->numNodes; i++)
   {
     dist.push_back(INFINITY);
     visited.push_back(false);
@@ -55,7 +55,7 @@ Dijkstra::shortest_path(int src, int dest, vector<int> &predecessors)
   visited[src]         = true;
   next                 = src;
 
-  while(counter < network->numofNodes)
+  while(counter < network->numNodes)
   {
     for(long unsigned int j = 0; j < ajacentNodes[next].size(); j++)
     {
@@ -70,7 +70,7 @@ Dijkstra::shortest_path(int src, int dest, vector<int> &predecessors)
     }
 
     minDist = UINT32_MAX;
-    for(k = 0; k < network->numofNodes; k++)
+    for(k = 0; k < network->numNodes; k++)
     {
       if((minDist > dist[k]) && !visited[k])
       {

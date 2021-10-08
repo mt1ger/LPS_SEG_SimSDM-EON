@@ -31,8 +31,6 @@
 // #define NUMOFSPECTRALSLOTS 40
 #define BW_SPECSLOT         12.5
 #define AR_RATIO            0.5
-#define MAX_NUMOFTIMESLICES 26
-// #define MAX_NUMOFTIMESLICES 1
 
 using namespace std;
 
@@ -55,12 +53,13 @@ public:
   char         fileName[500];
   // lambda: the mean of input rate; mu: 1/mu is the mean of holding time
   double       lambda, mu;
-  long long    numofRequests;
-  unsigned int numofCores;
-  int          maxAllowedSegments;
+  long long    numRequest;
+  unsigned int numCores;
+  int          maxLightSegments;
+  int          maxTimeSlices;
 
   /* Topology Variables */
-  unsigned int                numofNodes;
+  unsigned int                numNodes;
   vector<vector<double>>      nodesWeight;
   vector<vector<vector<int>>> routingTable;
 
@@ -85,30 +84,30 @@ public:
 
   /**** Metrics Collection ****/
   /*** Overall ***/
-  long long numofAllocatedRequests;
-  long long numofDoneRequests;    // Number of requests which are successfully
+  long long numAllocatedRequests;
+  long long numDoneRequests;    // Number of requests which are successfully
                                   // allocated, released, or blocked will be
                                   // considered as DoneRequests
 
   // Collect the number of transponders simultaneously used after
   // at the time slot for a request allocation
-  long long numofTransponders;
+  long long numTransponders;
   // Store the maximum number of transponders used simultaneously at any
   // time slot for one simlulation run
-  long long maxNumofTransponders;
-  long long numofSSs4Data; // Total number of data spectral slots occupied after
+  long long maxTransponders;
+  long long numSSs4Data; // Total number of data spectral slots occupied after
                            // a request allocation
-  long long maxNumofSSs4Data; // Maximum number of data spectral slot occupied
+  long long maxSSs4Data; // Maximum number of data spectral slot occupied
                               // simultaneously
 
   // ???
-  int numofSegments; // Total number of segments used after a request allocation
-  int maxNumofSegments; // Maximum number of segments used simultaneously
+  int numSegments; // Total number of segments used after a request allocation
+  int maxSegments; // Maximum number of segments used simultaneously
 
   double    totalHoldingTime;
   long long totalCoresUsed;
   double    avgHoldingTime;
-  double    avgCoresUsed;
+  double    avgCores;
 
   // Metrics to Measure Fregmentation
   double    spectrumUtilization;
@@ -121,31 +120,31 @@ public:
 
   /*** Break Down Data ***/
   // Light-segments Utilization Distribution
-  long long numof400SC6; // number of 64QAM 400Gb/s super
+  long long num400SC6; // number of 64QAM 400Gb/s super
                          // channel used per simulation
-  long long numof400SC4; // number of 16QAM 400Gb/s super
+  long long num400SC4; // number of 16QAM 400Gb/s super
                          // channel used per simulation
-  long long numof400SC2; // number of QPSK 400Gb/s super
+  long long num400SC2; // number of QPSK 400Gb/s super
                          // channel used per simulation
-  long long numof200SC6; // number of 64QAM 200Gb/s super
+  long long num200SC6; // number of 64QAM 200Gb/s super
                          // channel used per simulation
-  long long numof200SC4; // number of 16QAM 200Gb/s super
+  long long num200SC4; // number of 16QAM 200Gb/s super
                          // channel used per simulation
-  long long numof200SC2; // number of QPSK 200Gb/s super
+  long long num200SC2; // number of QPSK 200Gb/s super
                          // channel used per simulation
-  long long numof100SC6; // number of 64QAM 100Gb/s super
+  long long num100SC6; // number of 64QAM 100Gb/s super
                          // channel used per simulation
-  long long numof100SC4; // number of 16QAM 100Gb/s super
+  long long num100SC4; // number of 16QAM 100Gb/s super
                          // channel used per simulation
-  long long numof100SC2; // number of QPSK 100Gb/s super
+  long long num100SC2; // number of QPSK 100Gb/s super
                          // channel used per simulation
-  long long numof50SC6;  // number of 64QAM 50Gb/s super
-                         // channel used per simulation
-  long long numof50SC4;  // number of 16QAM 50Gb/s super
-                         // channel used per simulation
-  long long numof50SC2;  // number of QPSK 50Gb/s super channel
-                         // used per simulation
-  long long numof25SC;   // number of 25Gb/s super channel used per simulation
+  long long num50SC6; // number of 64QAM 50Gb/s super
+                      // channel used per simulation
+  long long num50SC4; // number of 16QAM 50Gb/s super
+                      // channel used per simulation
+  long long num50SC2; // number of QPSK 50Gb/s super channel
+                      // used per simulation
+  long long num25SC;  // number of 25Gb/s super channel used per simulation
 
   // Total Blocks
   long long totalBlocks;
@@ -190,18 +189,18 @@ public:
   long long totalTransponders_40IR;
 
   // Average Transponders per Request
-  double TpR;
-  double TpR_AR;
-  double TpR_IR;
-  double TpR_400;
-  double TpR_400AR;
-  double TpR_400IR;
-  double TpR_100;
-  double TpR_100AR;
-  double TpR_100IR;
-  double TpR_40;
-  double TpR_40AR;
-  double TpR_40IR;
+  double avgTransponders;
+  double avgTransponders_AR;
+  double avgTransponders_IR;
+  double avgTransponders_400;
+  double avgTransponders_400AR;
+  double avgTransponders_400IR;
+  double avgTransponders_100;
+  double avgTransponders_100AR;
+  double avgTransponders_100IR;
+  double avgTransponders_40;
+  double avgTransponders_40AR;
+  double avgTransponders_40IR;
 
   // Total LPSs
   long long totalLPSs;
@@ -236,18 +235,18 @@ public:
 
   /***  Debugging Variables ***/
   vector<int> blockedRequests; // The vector of IDs for blocked request
-  long long   numofRequests_AR;
-  long long   numofRequests_IR;
-  long long   numofRequests_400;
-  long long   numofRequests_100;
-  long long   numofRequests_40;
+  long long   numRequest_AR;
+  long long   numRequest_IR;
+  long long   numRequest_400;
+  long long   numRequest_100;
+  long long   numRequest_40;
 
   /*** Variables for Traffic Generator ***/
-  long long trafficGen_numofRequests_AR;
-  long long trafficGen_numofRequests_IR;
-  long long trafficGen_numofRequests_400;
-  long long trafficGen_numofRequests_100;
-  long long trafficGen_numofRequests_40;
+  long long trafficGen_numRequest_AR;
+  long long trafficGen_numRequest_IR;
+  long long trafficGen_numRequest_400;
+  long long trafficGen_numRequest_100;
+  long long trafficGen_numRequest_40;
 
 private:
 };

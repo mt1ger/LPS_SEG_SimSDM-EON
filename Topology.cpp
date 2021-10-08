@@ -13,10 +13,10 @@ Topology::read_topology(void) {
 
   netTopo = fopen(network->fileName, "r");
 
-  fscanf(netTopo, "%d", &network->numofNodes);
+  fscanf(netTopo, "%d", &network->numNodes);
 
-  for(unsigned int i = 0; i < network->numofNodes; i++) {
-    for(unsigned int j = 0; j < network->numofNodes; j++) {
+  for(unsigned int i = 0; i < network->numNodes; i++) {
+    for(unsigned int j = 0; j < network->numNodes; j++) {
       fscanf(netTopo, "%d", &temp);
       nodesWeight_sec.push_back(temp);
     }

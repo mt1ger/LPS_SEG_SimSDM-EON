@@ -149,15 +149,15 @@ txtParse::parse()
 {
 
   Metric BP("BP"); // Blocking probability
-  Metric maxNumofTransponders(
-      "maxNumofTransponders"); // Maximum number of transponders that are
+  Metric maxTransponders(
+      "maxTransponders"); // Maximum number of transponders that are
                                // simultaneously used
   Metric totalTransponders(
       "totalTransponders");  // The total number of transponders used for this
                              // simulation run
   Metric CpR("CpR");         // Number of Cores per request
-  Metric HTpR("HTpR");       // Holding time per request
-  Metric TpR("TpR");         // Number of Transponders per request
+  Metric avgHoldingTime("avgHoldingTime");       // Holding time per request
+  Metric avgTransponders("avgTransponders");         // Number of Transponders per request
   Metric LPSpR("LPSpR");     // Number of LPS per request
   Metric AvgIFpR("AvgIFpR"); // Average internal fragmentation per request
   Metric AvgEFpR("AvgEFpR"); // Average external fragmentation per request
@@ -229,17 +229,17 @@ txtParse::parse()
       "totalTransponders_40AR"); // Number of blocked 40 Gb/s AR request
   Metric totalTransponders_40IR(
       "totalTransponders_40IR");   // Number of blocked 40 Gb/s IR request
-  Metric TpR_AR("TpR_AR");         // Number of blocked AR request
-  Metric TpR_IR("TpR_IR");         // Number of blocked IR request
-  Metric TpR_400("TpR_400");       // Number of blocked 400 Gb/s request
-  Metric TpR_400AR("TpR_400AR");   // Number of blocked 400 Gb/s AR request
-  Metric TpR_400IR("TpR_400IR");   // Number of blocked 400 Gb/s IR request
-  Metric TpR_100("TpR_100");       // Number of blocked 100 Gb/s request
-  Metric TpR_100AR("TpR_100AR");   // Number of blocked 100 Gb/s AR request
-  Metric TpR_100IR("TpR_100IR");   // Number of blocked 100 Gb/s IR request
-  Metric TpR_40("TpR_40");         // Number of blocked 40 Gb/s request
-  Metric TpR_40AR("TpR_40AR");     // Number of blocked 40 Gb/s AR request
-  Metric TpR_40IR("TpR_40IR");     // Number of blocked 40 Gb/s IR request
+  Metric avgTransponders_AR("avgTransponders_AR");         // Number of blocked AR request
+  Metric avgTransponders_IR("avgTransponders_IR");         // Number of blocked IR request
+  Metric avgTransponders_400("avgTransponders_400");       // Number of blocked 400 Gb/s request
+  Metric avgTransponders_400AR("avgTransponders_400AR");   // Number of blocked 400 Gb/s AR request
+  Metric avgTransponders_400IR("avgTransponders_400IR");   // Number of blocked 400 Gb/s IR request
+  Metric avgTransponders_100("avgTransponders_100");       // Number of blocked 100 Gb/s request
+  Metric avgTransponders_100AR("avgTransponders_100AR");   // Number of blocked 100 Gb/s AR request
+  Metric avgTransponders_100IR("avgTransponders_100IR");   // Number of blocked 100 Gb/s IR request
+  Metric avgTransponders_40("avgTransponders_40");         // Number of blocked 40 Gb/s request
+  Metric avgTransponders_40AR("avgTransponders_40AR");     // Number of blocked 40 Gb/s AR request
+  Metric avgTransponders_40IR("avgTransponders_40IR");     // Number of blocked 40 Gb/s IR request
   Metric TotalLPSs_AR("TotalLPSs_AR");  // Number of LPSs for AR requests
   Metric TotalLPSs_IR("TotalLPSs_IR");  // Number of LPSs for IR requests
   Metric TotalLPSs_400("TotalLPSs_400"); // Number of LPSs for 400 Gb/s requests
@@ -266,11 +266,11 @@ txtParse::parse()
 
   /*** Initialization:  {core, erlang, data1, data2, data3, ...} ***/
   initialization(&BP);
-  initialization(&maxNumofTransponders);
+  initialization(&maxTransponders);
   initialization(&totalTransponders);
   initialization(&CpR);
-  initialization(&HTpR);
-  initialization(&TpR);
+  initialization(&avgHoldingTime);
+  initialization(&avgTransponders);
   initialization(&LPSpR);
   initialization(&AvgIFpR);
   initialization(&AvgEFpR);
@@ -310,17 +310,17 @@ txtParse::parse()
   initialization(&totalTransponders_40);
   initialization(&totalTransponders_40AR);
   initialization(&totalTransponders_40IR);
-  initialization(&TpR_AR);
-  initialization(&TpR_IR);
-  initialization(&TpR_400);
-  initialization(&TpR_400AR);
-  initialization(&TpR_400IR);
-  initialization(&TpR_100);
-  initialization(&TpR_100AR);
-  initialization(&TpR_100IR);
-  initialization(&TpR_40);
-  initialization(&TpR_40AR);
-  initialization(&TpR_40IR);
+  initialization(&avgTransponders_AR);
+  initialization(&avgTransponders_IR);
+  initialization(&avgTransponders_400);
+  initialization(&avgTransponders_400AR);
+  initialization(&avgTransponders_400IR);
+  initialization(&avgTransponders_100);
+  initialization(&avgTransponders_100AR);
+  initialization(&avgTransponders_100IR);
+  initialization(&avgTransponders_40);
+  initialization(&avgTransponders_40AR);
+  initialization(&avgTransponders_40IR);
   initialization(&TotalLPSs_AR);
   initialization(&TotalLPSs_IR);
   initialization(&TotalLPSs_400);
@@ -344,11 +344,11 @@ txtParse::parse()
     seed   = arr_strings[2];
 
     extraction(arr_strings[3], &BP, core, erlang, seed);
-    extraction(arr_strings[4], &maxNumofTransponders, core, erlang, seed);
+    extraction(arr_strings[4], &maxTransponders, core, erlang, seed);
     extraction(arr_strings[5], &totalTransponders, core, erlang, seed);
     extraction(arr_strings[6], &CpR, core, erlang, seed);
-    extraction(arr_strings[7], &HTpR, core, erlang, seed);
-    extraction(arr_strings[8], &TpR, core, erlang, seed);
+    extraction(arr_strings[7], &avgHoldingTime, core, erlang, seed);
+    extraction(arr_strings[8], &avgTransponders, core, erlang, seed);
     extraction(arr_strings[9], &LPSpR, core, erlang, seed);
     extraction(arr_strings[10], &AvgIFpR, core, erlang, seed);
     extraction(arr_strings[11], &AvgEFpR, core, erlang, seed);
@@ -388,17 +388,17 @@ txtParse::parse()
     extraction(arr_strings[45], &totalTransponders_40, core, erlang, seed);
     extraction(arr_strings[46], &totalTransponders_40AR, core, erlang, seed);
     extraction(arr_strings[47], &totalTransponders_40IR, core, erlang, seed);
-    extraction(arr_strings[48], &TpR_AR, core, erlang, seed);
-    extraction(arr_strings[49], &TpR_IR, core, erlang, seed);
-    extraction(arr_strings[50], &TpR_400, core, erlang, seed);
-    extraction(arr_strings[51], &TpR_400AR, core, erlang, seed);
-    extraction(arr_strings[52], &TpR_400IR, core, erlang, seed);
-    extraction(arr_strings[53], &TpR_100, core, erlang, seed);
-    extraction(arr_strings[54], &TpR_100AR, core, erlang, seed);
-    extraction(arr_strings[55], &TpR_100IR, core, erlang, seed);
-    extraction(arr_strings[56], &TpR_40, core, erlang, seed);
-    extraction(arr_strings[57], &TpR_40AR, core, erlang, seed);
-    extraction(arr_strings[58], &TpR_40IR, core, erlang, seed);
+    extraction(arr_strings[48], &avgTransponders_AR, core, erlang, seed);
+    extraction(arr_strings[49], &avgTransponders_IR, core, erlang, seed);
+    extraction(arr_strings[50], &avgTransponders_400, core, erlang, seed);
+    extraction(arr_strings[51], &avgTransponders_400AR, core, erlang, seed);
+    extraction(arr_strings[52], &avgTransponders_400IR, core, erlang, seed);
+    extraction(arr_strings[53], &avgTransponders_100, core, erlang, seed);
+    extraction(arr_strings[54], &avgTransponders_100AR, core, erlang, seed);
+    extraction(arr_strings[55], &avgTransponders_100IR, core, erlang, seed);
+    extraction(arr_strings[56], &avgTransponders_40, core, erlang, seed);
+    extraction(arr_strings[57], &avgTransponders_40AR, core, erlang, seed);
+    extraction(arr_strings[58], &avgTransponders_40IR, core, erlang, seed);
     extraction(arr_strings[59], &TotalLPSs_AR, core, erlang, seed);
     extraction(arr_strings[60], &TotalLPSs_IR, core, erlang, seed);
     extraction(arr_strings[61], &TotalLPSs_400, core, erlang, seed);
@@ -428,11 +428,11 @@ txtParse::parse()
 
   /*** Compute avg of data ***/
   avg_data(&BP);
-  avg_data(&maxNumofTransponders);
+  avg_data(&maxTransponders);
   avg_data(&totalTransponders);
   avg_data(&CpR);
-  avg_data(&HTpR);
-  avg_data(&TpR);
+  avg_data(&avgHoldingTime);
+  avg_data(&avgTransponders);
   avg_data(&LPSpR);
   avg_data(&AvgIFpR);
   avg_data(&AvgEFpR);
@@ -472,17 +472,17 @@ txtParse::parse()
   avg_data(&totalTransponders_40);
   avg_data(&totalTransponders_40AR);
   avg_data(&totalTransponders_40IR);
-  avg_data(&TpR_AR);
-  avg_data(&TpR_IR);
-  avg_data(&TpR_400);
-  avg_data(&TpR_400AR);
-  avg_data(&TpR_400IR);
-  avg_data(&TpR_100);
-  avg_data(&TpR_100AR);
-  avg_data(&TpR_100IR);
-  avg_data(&TpR_40);
-  avg_data(&TpR_40AR);
-  avg_data(&TpR_40IR);
+  avg_data(&avgTransponders_AR);
+  avg_data(&avgTransponders_IR);
+  avg_data(&avgTransponders_400);
+  avg_data(&avgTransponders_400AR);
+  avg_data(&avgTransponders_400IR);
+  avg_data(&avgTransponders_100);
+  avg_data(&avgTransponders_100AR);
+  avg_data(&avgTransponders_100IR);
+  avg_data(&avgTransponders_40);
+  avg_data(&avgTransponders_40AR);
+  avg_data(&avgTransponders_40IR);
   avg_data(&TotalLPSs_AR);
   avg_data(&TotalLPSs_IR);
   avg_data(&TotalLPSs_400);
@@ -511,11 +511,11 @@ txtParse::parse()
 
   /*** Write data to the associated file ***/
   write_to_files(&BP);
-  write_to_files(&maxNumofTransponders);
+  write_to_files(&maxTransponders);
   write_to_files(&totalTransponders);
   write_to_files(&CpR);
-  write_to_files(&HTpR);
-  write_to_files(&TpR);
+  write_to_files(&avgHoldingTime);
+  write_to_files(&avgTransponders);
   write_to_files(&LPSpR);
   write_to_files(&AvgIFpR);
   write_to_files(&AvgEFpR);
@@ -555,17 +555,17 @@ txtParse::parse()
   write_to_files(&totalTransponders_40);
   write_to_files(&totalTransponders_40AR);
   write_to_files(&totalTransponders_40IR);
-  write_to_files(&TpR_AR);
-  write_to_files(&TpR_IR);
-  write_to_files(&TpR_400);
-  write_to_files(&TpR_400AR);
-  write_to_files(&TpR_400IR);
-  write_to_files(&TpR_100);
-  write_to_files(&TpR_100AR);
-  write_to_files(&TpR_100IR);
-  write_to_files(&TpR_40);
-  write_to_files(&TpR_40AR);
-  write_to_files(&TpR_40IR);
+  write_to_files(&avgTransponders_AR);
+  write_to_files(&avgTransponders_IR);
+  write_to_files(&avgTransponders_400);
+  write_to_files(&avgTransponders_400AR);
+  write_to_files(&avgTransponders_400IR);
+  write_to_files(&avgTransponders_100);
+  write_to_files(&avgTransponders_100AR);
+  write_to_files(&avgTransponders_100IR);
+  write_to_files(&avgTransponders_40);
+  write_to_files(&avgTransponders_40AR);
+  write_to_files(&avgTransponders_40IR);
   write_to_files(&TotalLPSs_AR);
   write_to_files(&TotalLPSs_IR);
   write_to_files(&TotalLPSs_400);
