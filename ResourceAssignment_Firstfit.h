@@ -8,10 +8,10 @@
 #include <cmath>
 
 // Light-segment without time info
-class Spectrum_segment {
+class SpectrumSegment {
 public:
-  Spectrum_segment() {}
-  ~Spectrum_segment() {}
+  SpectrumSegment() {}
+  ~SpectrumSegment() {}
   unsigned int core;    // The core for this spectrum segment
   unsigned int firstSS; // The first spectral slot on the core above for this
                         // specturm segment
@@ -22,10 +22,10 @@ public:
 };
 
 // Light-segment Attributes
-class Light_segment {
+class LightSegment {
 public:
-  Light_segment() {}
-  ~Light_segment() {}
+  LightSegment() {}
+  ~LightSegment() {}
 
   // Each period is: [startTimeSlot, endTimeSlot], including the endTimeSlot.
   long long    startTimeSlot; // The start time slot of this period
@@ -135,6 +135,35 @@ private:
   list<SuperChannel> sCList;
 };
 
+class PotentialVoid {
+public:
+  PotentialVoid() {
+    core    = -1;
+    startSS = -1;
+    endSS   = -1;
+  }
+  ~PotentialVoid() {}
+
+  int core;
+  int startSS; // the first spectral slot index for the void
+  int endSS;   // the last spectral slot index for the void
+
+  void
+  clear() {
+    core    = -1;
+    startSS = -1;
+    endSS   = -1;
+  }
+
+  bool
+  empty() {
+    if(core == -1)
+      return true;
+    else
+      return false;
+  }
+};
+
 class ResourceAssignment {
 public:
   ResourceAssignment(Network *net, shared_ptr<EventQueue> eq) {
@@ -151,14 +180,14 @@ public:
   vector<vector<int>> availableSpectralSegments;
   // Stores the assigned spectral chunk for a specific time slot
   // [core, first spectral slot, last spectral slot, super channel bit rate]
-  list<Spectrum_segment> assignedSpectralSegments;
+  list<SpectrumSegment> assignedSpectralSegments;
   // Stores the available spectral slots for this time point
   list<vector<int>> availableSpecSlots;
   // Stores the potential voids that are formed by the available spectral slots
   // for this time point
-  list<vector<unsigned int>> potentialVoids;
+  list<PotentialVoid> potentialVoids;
   // Backup potentialVoids
-  list<vector<unsigned int>> potentialVoids_backup;
+  list<PotentialVoid> potentialVoids_backup;
 
   /*** Functions ***/
   void

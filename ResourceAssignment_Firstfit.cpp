@@ -79,45 +79,45 @@ ResourceAssignment::create_voids(
     list<vector<vector<vector<vector<bool>>>>>::iterator timeIter) {
   list<vector<int>>::iterator i; // iterator to scan availableSpecSlots
 
-  vector<unsigned int>        potentialVoids_sec;
-
   check_availability_first_link(circuitRoute_ptr->at(0),
                                 circuitRoute_ptr->at(1), timeIter);
   check_availability_following_links(circuitRoute_ptr, timeIter);
 
+  PotentialVoid potentialVoid;
+
   for(i = availableSpecSlots.begin(); i != availableSpecSlots.end(); i++) {
-    if(potentialVoids_sec.empty()) {
+    if(potentialVoid.empty()) {
       if(i != (--availableSpecSlots.end())) {
-        potentialVoids_sec.push_back(i->at(0));
-        potentialVoids_sec.push_back(i->at(1));
-        potentialVoids_sec.push_back(i->at(1));
-        potentialVoids.push_back(potentialVoids_sec);
+        potentialVoid.core    = i->at(0);
+        potentialVoid.startSS = i->at(1);
+        potentialVoid.endSS   = i->at(1);
+        potentialVoids.push_back(potentialVoid);
       }
     }
     else {
-      if((i->at(1) == (potentialVoids_sec.at(2) + 1))
-         && (i->at(0) == potentialVoids_sec.at(0))) {
-        potentialVoids_sec.at(2)  = i->at(1);
-        *(--potentialVoids.end()) = potentialVoids_sec;
+      if((i->at(1) == (potentialVoid.endSS + 1))
+         && (i->at(0) == potentialVoid.core)) {
+        potentialVoid.endSS       = i->at(1);
+        *(--potentialVoids.end()) = potentialVoid;
       }
       else {
-        if(potentialVoids_sec.at(2) != potentialVoids_sec.at(1)) {
-          potentialVoids_sec.clear();
+        if(potentialVoid.endSS != potentialVoid.startSS) {
+          potentialVoid.clear();
           if(i != (--availableSpecSlots.end())) {
-            potentialVoids_sec.push_back(i->at(0));
-            potentialVoids_sec.push_back(i->at(1));
-            potentialVoids_sec.push_back(i->at(1));
-            potentialVoids.push_back(potentialVoids_sec);
+            potentialVoid.core    = i->at(0);
+            potentialVoid.startSS = i->at(1);
+            potentialVoid.endSS   = i->at(1);
+            potentialVoids.push_back(potentialVoid);
           }
         }
         else {
-          potentialVoids_sec.clear();
+          potentialVoid.clear();
           potentialVoids.erase(--potentialVoids.end());
           if(i != (--availableSpecSlots.end())) {
-            potentialVoids_sec.push_back(i->at(0));
-            potentialVoids_sec.push_back(i->at(1));
-            potentialVoids_sec.push_back(i->at(1));
-            potentialVoids.push_back(potentialVoids_sec);
+            potentialVoid.core    = i->at(0);
+            potentialVoid.startSS = i->at(1);
+            potentialVoid.endSS   = i->at(1);
+            potentialVoids.push_back(potentialVoid);
           }
         }
       }
@@ -128,13 +128,10 @@ ResourceAssignment::create_voids(
   cout << "\033[0;32mPRINT\033[0m "
        << "Potential voids for this time slot" << endl;
 
-  list<vector<unsigned int>>::iterator m;
+  auto m = potentialVoids.begin();
   cout << "  ";
   for(m = potentialVoids.begin(); m != potentialVoids.end(); m++) {
-    for(long unsigned int j = 0; j < m->size(); j++) {
-      cout << m->at(j) << ' ';
-    }
-    cout << "     ";
+    cout << m->core << ' ' << m->startSS << ' ' << m->endSS << "     ";
   }
   cout << endl;
 #endif
@@ -236,7 +233,7 @@ ResourceAssignment::match_SC_and_voids(unsigned int bitRate,
                                        list<SuperChannel>::iterator sCIter,
                                        unsigned int *numofGB_ptr) {
 
-  Spectrum_segment spectrumSegment;
+  SpectrumSegment spectrumSegment;
   auto             potentialVoids_iter = potentialVoids.begin();
   while(bitRate > 0) {
     /* Maybe useful when using multiple SC options for allocation */
@@ -251,11 +248,11 @@ ResourceAssignment::match_SC_and_voids(unsigned int bitRate,
       *availableFlag_ptr = false;
       break;
     }
-    else if(potentialVoids_iter->at(2) - potentialVoids_iter->at(1) + 1
+    else if(potentialVoids_iter->endSS - potentialVoids_iter->startSS + 1
             == sCIter->numofMSSs + GB) {
-      spectrumSegment.core = potentialVoids_iter->at(0);
-      spectrumSegment.firstSS = potentialVoids_iter->at(1);
-      spectrumSegment.lastSS  = potentialVoids_iter->at(2);
+      spectrumSegment.core    = potentialVoids_iter->core;
+      spectrumSegment.firstSS = potentialVoids_iter->startSS;
+      spectrumSegment.lastSS  = potentialVoids_iter->endSS;
       spectrumSegment.mF      = sCIter->mF;
       spectrumSegment.bitRate = sCIter->sCBitRate;
       /* May need a function HERE to record the used SC option when using
@@ -272,15 +269,13 @@ ResourceAssignment::match_SC_and_voids(unsigned int bitRate,
 
 #ifdef DEBUG_print_potential_voids
       cout << "\033[0;32mThe SC is \033[0m " << sCIter->sCBitRate << endl;
-      list<vector<unsigned int>>::iterator probeIndex;
+      auto probeIndex = potentialVoids.begin();
       cout << "\033[0;32mPRINT\033[0m "
            << "Potential voids AFTER reservation" << endl;
       for(probeIndex = potentialVoids.begin();
           probeIndex != potentialVoids.end(); probeIndex++) {
-        for(int j = 0; j < probeIndex->size(); j++) {
-          cout << probeIndex->at(j) << ' ';
-        }
-        cout << "    ";
+        cout << probeIndex->core << ' ' << probeIndex->startSS << ' '
+             << probeIndex->endSS << "     ";
       }
       cout << endl;
 #endif
@@ -288,12 +283,12 @@ ResourceAssignment::match_SC_and_voids(unsigned int bitRate,
       // break;
       continue;
     }
-    else if(potentialVoids_iter->at(2) - potentialVoids_iter->at(1) + 1
+    else if(potentialVoids_iter->endSS - potentialVoids_iter->startSS + 1
             > sCIter->numofMSSs + GB) {
-      spectrumSegment.core    = potentialVoids_iter->at(0);
-      spectrumSegment.firstSS = potentialVoids_iter->at(1);
+      spectrumSegment.core    = potentialVoids_iter->core;
+      spectrumSegment.firstSS = potentialVoids_iter->startSS;
       spectrumSegment.lastSS
-          = potentialVoids_iter->at(1) + sCIter->numofMSSs + GB - 1;
+          = potentialVoids_iter->startSS + sCIter->numofMSSs + GB - 1;
       spectrumSegment.mF      = sCIter->mF;
       spectrumSegment.bitRate = sCIter->sCBitRate;
       /* May need a function HERE to record the used SC option when using
@@ -305,11 +300,11 @@ ResourceAssignment::match_SC_and_voids(unsigned int bitRate,
         bitRate -= sCIter->sCBitRate;
       else
         bitRate = 0;
-      if(potentialVoids_iter->at(2)
-             - (potentialVoids_iter->at(1) + sCIter->numofMSSs + GB) + 1
+      if(potentialVoids_iter->endSS
+             - (potentialVoids_iter->startSS + sCIter->numofMSSs + GB) + 1
          > GB) {
-        potentialVoids_iter->at(1)
-            = potentialVoids_iter->at(1) + sCIter->numofMSSs + GB;
+        potentialVoids_iter->startSS
+            = potentialVoids_iter->startSS + sCIter->numofMSSs + GB;
       }
       else {
         potentialVoids_iter = potentialVoids.erase(potentialVoids_iter);
@@ -318,23 +313,21 @@ ResourceAssignment::match_SC_and_voids(unsigned int bitRate,
 
 #ifdef DEBUG_print_potential_voids
       cout << "\033[0;32mThe SC is \033[0m " << sCIter->sCBitRate << endl;
-      list<vector<unsigned int>>::iterator probeIndex;
+      auto probeIndex = potentialVoids.begin();
       cout << "\033[0;32mPRINT\033[0m "
            << "Potential voids AFTER reservation" << endl;
       cout << "  ";
       for(probeIndex = potentialVoids.begin();
           probeIndex != potentialVoids.end(); probeIndex++) {
-        for(int j = 0; j < probeIndex->size(); j++) {
-          cout << probeIndex->at(j) << ' ';
-        }
-        cout << "    ";
+        cout << probeIndex->core << ' ' << probeIndex->startSS << ' '
+             << probeIndex->endSS << "     ";
       }
       cout << endl;
 #endif
       // break;
       continue;
     }
-    else if((potentialVoids_iter->at(2) - potentialVoids_iter->at(1) + 1)
+    else if((potentialVoids_iter->endSS - potentialVoids_iter->startSS + 1)
             < sCIter->numofMSSs + GB) {
       potentialVoids_iter++;
     }
@@ -399,10 +392,10 @@ ResourceAssignment::handle_requests(
   // Stores attributes for all periods of time slots for LPSs
   // [number of LPSs][number of light-segment for the same period]
   // [{start_time, end_time, core, first_SS, last_SS}]
-  vector<vector<Light_segment>> LSAttributes;
+  vector<vector<LightSegment>> LSAttributes;
   // [number of light-segment for the same period]
   // [{start_time, end_time, core, first_SS, last_SS}]
-  vector<Light_segment> LSAttributes_sec;
+  vector<LightSegment> LSAttributes_sec;
 
   /** Compute supported modulation formats **/
   ModulationFormats modulationFormats(circuitRequest_ptr, network);
@@ -424,7 +417,7 @@ ResourceAssignment::handle_requests(
   auto iter = superChannelQueue.begin();
   for(; iter != superChannelQueue.end(); iter++) {
     SuperChannel *sC_ptr = superChannelQueue.get(iter);
-    if(sC_ptr->numofSCs4Request > network->maxAllowedSegments) {
+    if(sC_ptr->numofSCs4Request > network->maxSegments) {
       iter = superChannelQueue.erase(iter);
       iter--; // This iter-- is used to neutralize iter++
     }
@@ -508,13 +501,10 @@ ResourceAssignment::handle_requests(
            << "Potential voids for this time slot, before pre-allocation"
            << endl;
 
-      list<vector<unsigned int>>::iterator m;
+      auto m = potentialVoids.begin();
       cout << "  ";
       for(m = potentialVoids.begin(); m != potentialVoids.end(); m++) {
-        for(long unsigned int j = 0; j < m->size(); j++) {
-          cout << m->at(j) << ' ';
-        }
-        cout << "     ";
+        cout << m->core << ' ' << m->startSS << ' ' << m->endSS << "     ";
       }
       cout << endl;
 #endif
@@ -533,7 +523,7 @@ ResourceAssignment::handle_requests(
       LSAttributes_sec.clear();
       for(auto iter = assignedSpectralSegments.begin();
           iter != assignedSpectralSegments.end(); iter++) {
-        Light_segment lightSegment;
+        LightSegment lightSegment;
         lightSegment.startTimeSlot = snapshotStartTime;
         lightSegment.core          = iter->core;
         lightSegment.firstSS       = iter->firstSS;
@@ -555,7 +545,7 @@ ResourceAssignment::handle_requests(
     timeCount++;
     durationCount--;
   }
-  if(LSAttributes.size() > network->maxAllowedTimeSlices)
+  if(LSAttributes.size() > network->maxTimeSlices)
     availableFlag = false;
 
   /** Real allocation and printout **/
