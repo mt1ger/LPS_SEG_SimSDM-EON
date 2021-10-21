@@ -417,7 +417,7 @@ ResourceAssignment::handle_requests(
   auto iter = superChannelQueue.begin();
   for(; iter != superChannelQueue.end(); iter++) {
     SuperChannel *sC_ptr = superChannelQueue.get(iter);
-    if(sC_ptr->numofSCs4Request > network->maxSegments) {
+    if(sC_ptr->numofSCs4Request > network->maxLightSegments) {
       iter = superChannelQueue.erase(iter);
       iter--; // This iter-- is used to neutralize iter++
     }
@@ -640,11 +640,11 @@ ResourceAssignment::handle_requests(
     }
 
     /** Compute the maximum utilization of segments for this LPR **/
-    unsigned long int maxSegments
+    unsigned long int maxLightSegments
         = 0; // Maximum number of segments this LPR used
     for(int i = 0; i < LSAttributes.size(); i++) {
-      if(LSAttributes.at(i).size() > maxSegments) {
-        maxSegments = LSAttributes.at(i).size();
+      if(LSAttributes.at(i).size() > maxLightSegments) {
+        maxLightSegments = LSAttributes.at(i).size();
       }
     }
 
@@ -677,7 +677,7 @@ ResourceAssignment::handle_requests(
              << "  MF: " << LSAttributes[i][j].mF << endl;
       }
     }
-    cout << "# of Segments: " << maxSegments << endl;
+    cout << "# of Segments: " << maxLightSegments << endl;
     cout << "# of Time-Slices: " << LSAttributes.size() << endl;
     cout << "------------------------------------------------------------"
          << endl;
@@ -690,69 +690,69 @@ ResourceAssignment::handle_requests(
         circuitRequest_ptr->arrivalTime, circuitRequest_ptr->startTime,
         circuitRequest_ptr->duration,
         circuitRequest_ptr->startTime + circuitRequest_ptr->duration,
-        maxSegments);
+        maxLightSegments);
     eventQueue->queue_insert(event_ptr);
 
     switch(circuitRequest_ptr->bitRate) {
       case 40:
         network->totalLPSs_40 += LSAttributes.size() - 1;
-        network->totalTransponders_40 += maxSegments;
+        network->totalTransponders_40 += maxLightSegments;
         network->totalAllocations_40++;
         if(circuitRequest_ptr->requestType == c_AR) {
           network->totalAllocations_40AR++;
           network->totalAllocations_AR++;
-          network->totalTransponders_AR += maxSegments;
-          network->totalTransponders_40AR += maxSegments;
+          network->totalTransponders_AR += maxLightSegments;
+          network->totalTransponders_40AR += maxLightSegments;
           network->totalLPSs_AR += LSAttributes.size() - 1;
           network->totalLPSs_40AR += LSAttributes.size() - 1;
         }
         else {
           network->totalAllocations_40IR++;
           network->totalAllocations_IR++;
-          network->totalTransponders_IR += maxSegments;
-          network->totalTransponders_40IR += maxSegments;
+          network->totalTransponders_IR += maxLightSegments;
+          network->totalTransponders_40IR += maxLightSegments;
           network->totalLPSs_IR += LSAttributes.size() - 1;
           network->totalLPSs_40IR += LSAttributes.size() - 1;
         }
         break;
       case 100:
-        network->totalTransponders_100 += maxSegments;
+        network->totalTransponders_100 += maxLightSegments;
         network->totalLPSs_100 += LSAttributes.size() - 1;
         network->totalAllocations_100++;
         if(circuitRequest_ptr->requestType == c_AR) {
           network->totalAllocations_100AR++;
           network->totalAllocations_AR++;
-          network->totalTransponders_AR += maxSegments;
-          network->totalTransponders_100AR += maxSegments;
+          network->totalTransponders_AR += maxLightSegments;
+          network->totalTransponders_100AR += maxLightSegments;
           network->totalLPSs_AR += LSAttributes.size() - 1;
           network->totalLPSs_100AR += LSAttributes.size() - 1;
         }
         else {
           network->totalAllocations_100IR++;
           network->totalAllocations_IR++;
-          network->totalTransponders_IR += maxSegments;
-          network->totalTransponders_100IR += maxSegments;
+          network->totalTransponders_IR += maxLightSegments;
+          network->totalTransponders_100IR += maxLightSegments;
           network->totalLPSs_IR += LSAttributes.size() - 1;
           network->totalLPSs_100IR += LSAttributes.size() - 1;
         }
         break;
       case 400:
-        network->totalTransponders_400 += maxSegments;
+        network->totalTransponders_400 += maxLightSegments;
         network->totalLPSs_400 += LSAttributes.size() - 1;
         network->totalAllocations_400++;
         if(circuitRequest_ptr->requestType == c_AR) {
           network->totalAllocations_400AR++;
           network->totalAllocations_AR++;
-          network->totalTransponders_AR += maxSegments;
-          network->totalTransponders_400AR += maxSegments;
+          network->totalTransponders_AR += maxLightSegments;
+          network->totalTransponders_400AR += maxLightSegments;
           network->totalLPSs_AR += LSAttributes.size() - 1;
           network->totalLPSs_400AR += LSAttributes.size() - 1;
         }
         else {
           network->totalAllocations_400IR++;
           network->totalAllocations_IR++;
-          network->totalTransponders_IR += maxSegments;
-          network->totalTransponders_400IR += maxSegments;
+          network->totalTransponders_IR += maxLightSegments;
+          network->totalTransponders_400IR += maxLightSegments;
           network->totalLPSs_IR += LSAttributes.size() - 1;
           network->totalLPSs_400IR += LSAttributes.size() - 1;
         }
@@ -796,12 +796,12 @@ ResourceAssignment::handle_requests(
     }
 
     network->numAllocatedRequests++;
-    network->numTransponders += maxSegments;
+    network->numTransponders += maxLightSegments;
     // network->numSSs4Data
     //     = (LSAttributes[0][0][4] - LSAttributes[0][0][3] + 1 -
     //     GB)
     //       * LSAttributes[0].size();
-    network->totalTransponders += maxSegments;
+    network->totalTransponders += maxLightSegments;
     network->totalHoldingTime += circuitRequest_ptr->duration;
     // network->totalCoresUsed++;
     network->totalLPSs += LSAttributes.size() - 1;

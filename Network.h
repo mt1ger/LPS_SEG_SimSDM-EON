@@ -100,10 +100,6 @@ public:
   long long maxSSs4Data; // Maximum number of data spectral slot occupied
                               // simultaneously
 
-  // ???
-  int numSegments; // Total number of segments used after a request allocation
-  int maxSegments; // Maximum number of segments used simultaneously
-
   double    totalHoldingTime;
   long long totalCoresUsed;
   double    avgHoldingTime;

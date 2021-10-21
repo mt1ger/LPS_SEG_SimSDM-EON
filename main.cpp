@@ -64,7 +64,7 @@ main(int argc, char *argv[]) {
   // string  filePath;
   // filePath = path + "MaxSec.txt";
   // file_ptr.open(filePath, fstream::app);
-  // file_ptr << to_string(network->maxSegments) + ' ';
+  // file_ptr << to_string(network->maxLightSegments) + ' ';
   // file_ptr.close();
   // ??? End
 
