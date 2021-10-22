@@ -55,8 +55,8 @@ public:
   double       lambda, mu;
   long long    numRequest;
   unsigned int numCores;
-  int          maxLightSegments;
-  int          maxTimeSlices;
+  size_t       maxLightSegments;
+  size_t       maxTimeSlices;
 
   /* Topology Variables */
   unsigned int                numNodes;

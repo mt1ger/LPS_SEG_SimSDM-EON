@@ -9,10 +9,10 @@ ResourceAssignment::check_availability_first_link(
     unsigned int predecessor, unsigned int successor,
     list<vector<vector<vector<vector<bool>>>>>::iterator timeIter) {
 
-  vector<int> availableSpecSlots_sec;
+  vector<unsigned int> availableSpecSlots_sec;
   availableSpecSlots.clear();
   for(unsigned int c = 0; c < network->numCores; c++) {
-    for(int i = 0; i < NUMOFSPECTRALSLOTS; i++) {
+    for(size_t i = 0; i < NUMOFSPECTRALSLOTS; i++) {
       if(timeIter->at(predecessor).at(successor).at(c).at(i) == false) {
         availableSpecSlots_sec.push_back(c);
         availableSpecSlots_sec.push_back(i);
@@ -42,7 +42,7 @@ ResourceAssignment::check_availability_following_links(
     vector<int> *                                        circuitRoute_ptr,
     list<vector<vector<vector<vector<bool>>>>>::iterator timeIter) {
 
-  list<vector<int>>::iterator i; // iterator to scan availableSpecSlots
+  auto i = availableSpecSlots.begin();
 
   for(long unsigned int r = 2; r < circuitRoute_ptr->size(); r++) {
     for(i = availableSpecSlots.begin(); i != availableSpecSlots.end(); i++) {
@@ -77,7 +77,8 @@ void
 ResourceAssignment::create_voids(
     vector<int> *                                        circuitRoute_ptr,
     list<vector<vector<vector<vector<bool>>>>>::iterator timeIter) {
-  list<vector<int>>::iterator i; // iterator to scan availableSpecSlots
+
+  auto i = availableSpecSlots.begin();
 
   check_availability_first_link(circuitRoute_ptr->at(0),
                                 circuitRoute_ptr->at(1), timeIter);
@@ -148,7 +149,7 @@ ResourceAssignment::check_resource_availibility(
   for(; assignedSpectralSegments_iter != assignedSpectralSegments.end();
       assignedSpectralSegments_iter++) {
     for(long unsigned int i = 1; i < circuitRoute.size(); i++) {
-      for(int k = assignedSpectralSegments_iter->firstSS;
+      for(size_t k = assignedSpectralSegments_iter->firstSS;
           k <= assignedSpectralSegments_iter->lastSS; k++) {
         if(iter->at(circuitRoute[i - 1])
                .at(circuitRoute[i])
@@ -178,16 +179,16 @@ ResourceAssignment::super_channel_info(
 
   for(long unsigned int i = 0; i < candidateSCs.size(); i++) {
     modulationFormats_ptr->mf_chosen(
-        circuitRoute_ptr, &(candidateSCs[i].numofMSSs),
+        circuitRoute_ptr, &(candidateSCs[i].numMSSs),
         &(candidateSCs[i].sCBitRate), &(candidateSCs[i].mF),
         &(candidateSCs[i].mFBitsperSignal));
 
     // 0 means no availability for this super channel option
-    if(candidateSCs[i].numofMSSs != 0) {
-      candidateSCs[i].numofSCs4Request = ceil(
+    if(candidateSCs[i].numMSSs != 0) {
+      candidateSCs[i].numSCs4Request = ceil(
           (double)circuitRequest_ptr->bitRate / candidateSCs[i].sCBitRate);
-      candidateSCs[i].numofMSSs4Request
-          = (candidateSCs[i].numofMSSs + GB) * candidateSCs[i].numofSCs4Request;
+      candidateSCs[i].numMSSs4Request
+          = (candidateSCs[i].numMSSs + GB) * candidateSCs[i].numSCs4Request;
     }
   }
 #ifdef DEBUG_print_SC_info
@@ -197,9 +198,9 @@ ResourceAssignment::super_channel_info(
     cout << "  ";
     cout << "BR4SC: " << candidateSCs[i].sCBitRate
          << "    MF: " << candidateSCs[i].mF
-         << "    SSs4SC: " << candidateSCs[i].numofMSSs
-         << "    SCs4Request: " << candidateSCs[i].numofSCs4Request
-         << "    SSs4request: " << candidateSCs[i].numofMSSs4Request << endl;
+         << "    SSs4SC: " << candidateSCs[i].numMSSs
+         << "    SCs4Request: " << candidateSCs[i].numSCs4Request
+         << "    SSs4request: " << candidateSCs[i].numMSSs4Request << endl;
   }
 #endif
 }
@@ -213,12 +214,11 @@ ResourceAssignment::sort_super_channel(
   super_channel_info(modulationFormats_ptr, circuitRoute_ptr,
                      circuitRequest_ptr);
   for(long unsigned int i = 0; i < candidateSCs.size(); i++) {
-    if(candidateSCs[i].numofMSSs == 0)
+    if(candidateSCs[i].numMSSs == 0)
       continue;
     else
       superChannelQueue_ptr->insert(&candidateSCs[i]);
   }
-  bool *availableFlag_ptr;
 
 #ifdef DEBUG_print_sorted_SC
   cout << "\033[0;32mPRINT\033[0m "
@@ -249,7 +249,7 @@ ResourceAssignment::match_SC_and_voids(unsigned int bitRate,
       break;
     }
     else if(potentialVoids_iter->endSS - potentialVoids_iter->startSS + 1
-            == sCIter->numofMSSs + GB) {
+            == sCIter->numMSSs + GB) {
       spectrumSegment.core    = potentialVoids_iter->core;
       spectrumSegment.firstSS = potentialVoids_iter->startSS;
       spectrumSegment.lastSS  = potentialVoids_iter->endSS;
@@ -284,11 +284,11 @@ ResourceAssignment::match_SC_and_voids(unsigned int bitRate,
       continue;
     }
     else if(potentialVoids_iter->endSS - potentialVoids_iter->startSS + 1
-            > sCIter->numofMSSs + GB) {
+            > sCIter->numMSSs + GB) {
       spectrumSegment.core    = potentialVoids_iter->core;
       spectrumSegment.firstSS = potentialVoids_iter->startSS;
       spectrumSegment.lastSS
-          = potentialVoids_iter->startSS + sCIter->numofMSSs + GB - 1;
+          = potentialVoids_iter->startSS + sCIter->numMSSs + GB - 1;
       spectrumSegment.mF      = sCIter->mF;
       spectrumSegment.bitRate = sCIter->sCBitRate;
       /* May need a function HERE to record the used SC option when using
@@ -301,10 +301,10 @@ ResourceAssignment::match_SC_and_voids(unsigned int bitRate,
       else
         bitRate = 0;
       if(potentialVoids_iter->endSS
-             - (potentialVoids_iter->startSS + sCIter->numofMSSs + GB) + 1
+             - (potentialVoids_iter->startSS + sCIter->numMSSs + GB) + 1
          > GB) {
         potentialVoids_iter->startSS
-            = potentialVoids_iter->startSS + sCIter->numofMSSs + GB;
+            = potentialVoids_iter->startSS + sCIter->numMSSs + GB;
       }
       else {
         potentialVoids_iter = potentialVoids.erase(potentialVoids_iter);
@@ -328,7 +328,7 @@ ResourceAssignment::match_SC_and_voids(unsigned int bitRate,
       continue;
     }
     else if((potentialVoids_iter->endSS - potentialVoids_iter->startSS + 1)
-            < sCIter->numofMSSs + GB) {
+            < sCIter->numMSSs + GB) {
       potentialVoids_iter++;
     }
   }
@@ -417,7 +417,7 @@ ResourceAssignment::handle_requests(
   auto iter = superChannelQueue.begin();
   for(; iter != superChannelQueue.end(); iter++) {
     SuperChannel *sC_ptr = superChannelQueue.get(iter);
-    if(sC_ptr->numofSCs4Request > network->maxLightSegments) {
+    if(sC_ptr->numSCs4Request > network->maxLightSegments) {
       iter = superChannelQueue.erase(iter);
       iter--; // This iter-- is used to neutralize iter++
     }
@@ -446,7 +446,7 @@ ResourceAssignment::handle_requests(
     if(!assignedSpectralSegments.empty()) {
       check_resource_availibility(timeIter, circuitRoute, &tempAvailableFlag);
       if(tempAvailableFlag == true) {
-        for(int i = 0; i < LSAttributes_sec.size(); i++) {
+        for(size_t i = 0; i < LSAttributes_sec.size(); i++) {
           LSAttributes_sec[i].endTimeSlot = timeCount;
         }
         if(durationCount == 1) {
@@ -536,7 +536,7 @@ ResourceAssignment::handle_requests(
     if(availableFlag == false)
       break;
 
-    for(int i = 0; i < LSAttributes_sec.size(); i++) {
+    for(size_t i = 0; i < LSAttributes_sec.size(); i++) {
       LSAttributes_sec[i].endTimeSlot = timeCount;
     }
     if(durationCount == 1) {
@@ -625,7 +625,7 @@ ResourceAssignment::handle_requests(
       for(long unsigned int j = 0; j < LSAttributes[i].size(); j++) {
         for(; durationCount != 0; timeIter++) {
           for(long unsigned int r = 1; r < circuitRoute.size(); r++) {
-            for(int k = LSAttributes[i][j].firstSS;
+            for(size_t k = LSAttributes[i][j].firstSS;
                 k < LSAttributes[i][j].lastSS + 1; k++) {
               timeIter->at(circuitRoute[r - 1])
                   .at(circuitRoute[r])
@@ -642,7 +642,7 @@ ResourceAssignment::handle_requests(
     /** Compute the maximum utilization of segments for this LPR **/
     unsigned long int maxLightSegments
         = 0; // Maximum number of segments this LPR used
-    for(int i = 0; i < LSAttributes.size(); i++) {
+    for(size_t i = 0; i < LSAttributes.size(); i++) {
       if(LSAttributes.at(i).size() > maxLightSegments) {
         maxLightSegments = LSAttributes.at(i).size();
       }

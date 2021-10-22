@@ -46,13 +46,13 @@ public:
 
   /*** Variables ***/
   unsigned int sCBitRate; // Bit rate for this SC
-  unsigned int numofMSSs; // The number of SSs for after modulation for this SC
+  unsigned int numMSSs; // The number of SSs for after modulation for this SC
   string       mF;        // Modulation format for this SC
   unsigned int
       mFBitsperSignal; // The associated bits per signal for the MF above
   unsigned int
-      numofSCs4Request; // The needed number of SCs for the given request
-  unsigned int numofMSSs4Request; // The needed number of SSs for the given
+      numSCs4Request; // The needed number of SCs for the given request
+  unsigned int numMSSs4Request; // The needed number of SSs for the given
                                   // request (data + GB)
 };
 
@@ -74,9 +74,9 @@ public:
 
       bool insertFlag = false;
       for(; sCList_iter != sCList.begin(); sCList_iter--) {
-        if(sCList_iter->numofMSSs == 0)
+        if(sCList_iter->numMSSs == 0)
           continue;
-        if(sC_ptr->numofMSSs4Request >= sCList_iter->numofMSSs4Request) {
+        if(sC_ptr->numMSSs4Request >= sCList_iter->numMSSs4Request) {
           sCList_iter++;
           sCList.insert(sCList_iter, *sC_ptr);
           insertFlag = true;
@@ -85,11 +85,11 @@ public:
       }
       // consider when sCList_iter == sCList.begin()
       if(insertFlag == false) {
-        if(sC_ptr->numofMSSs4Request >= sCList_iter->numofMSSs4Request) {
+        if(sC_ptr->numMSSs4Request >= sCList_iter->numMSSs4Request) {
           sCList_iter++;
           sCList.insert(sCList_iter, *sC_ptr);
         }
-        else if(sC_ptr->numofMSSs4Request < sCList_iter->numofMSSs4Request)
+        else if(sC_ptr->numMSSs4Request < sCList_iter->numMSSs4Request)
           sCList.push_front(*sC_ptr);
       }
     }
@@ -138,26 +138,26 @@ private:
 class PotentialVoid {
 public:
   PotentialVoid() {
-    core    = -1;
-    startSS = -1;
-    endSS   = -1;
+    core    = 100000;
+    startSS = 100000;
+    endSS   = 100000;
   }
   ~PotentialVoid() {}
 
-  int core;
-  int startSS; // the first spectral slot index for the void
-  int endSS;   // the last spectral slot index for the void
+  size_t core;
+  size_t startSS; // the first spectral slot index for the void
+  size_t endSS;   // the last spectral slot index for the void
 
   void
   clear() {
-    core    = -1;
-    startSS = -1;
-    endSS   = -1;
+    core    = 100000;
+    startSS = 100000;
+    endSS   = 100000;
   }
 
   bool
   empty() {
-    if(core == -1)
+    if(core == 100000)
       return true;
     else
       return false;
@@ -182,7 +182,7 @@ public:
   // [core, first spectral slot, last spectral slot, super channel bit rate]
   list<SpectrumSegment> assignedSpectralSegments;
   // Stores the available spectral slots for this time point
-  list<vector<int>> availableSpecSlots;
+  list<vector<unsigned int>> availableSpecSlots;
   // Stores the potential voids that are formed by the available spectral slots
   // for this time point
   list<PotentialVoid> potentialVoids;
