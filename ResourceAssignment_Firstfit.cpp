@@ -351,13 +351,6 @@ ResourceAssignment::enlarge_time_snapshot(
   }
 }
 
-long long
-ResourceAssignment::precision_double(double num) {
-  double eps = 0.000005;
-  num += eps;
-  return floor(num * 1000);
-}
-
 void
 ResourceAssignment::handle_requests(
     shared_ptr<CircuitRequest> circuitRequest_ptr) {
@@ -379,9 +372,9 @@ ResourceAssignment::handle_requests(
   /** Append time slots for the LPR's duration that exceeds the
    * network->spectralSlots **/
   list<vector<vector<vector<vector<bool>>>>>::iterator timeIter;
-  long long startTime   = precision_double(circuitRequest_ptr->startTime);
-  long long releaseTime = precision_double(circuitRequest_ptr->releaseTime);
-  long long duration    = precision_double(circuitRequest_ptr->duration);
+  long long startTime   = double_precision(circuitRequest_ptr->startTime);
+  long long releaseTime = double_precision(circuitRequest_ptr->releaseTime);
+  long long duration    = double_precision(circuitRequest_ptr->duration);
   enlarge_time_snapshot(network->spectralSlots, releaseTime);
 
   /** Skip idle time slots **/
@@ -413,11 +406,11 @@ ResourceAssignment::handle_requests(
   candidateSCs.clear();
   sort_super_channel(&modulationFormats, &circuitRoute, circuitRequest_ptr,
                      &superChannelQueue);
-  // Delete the slicing plan that exceeds maxAllowedSegments
+  // Delete the slicing plan that exceeds maxAllowedLightSegments
   auto iter = superChannelQueue.begin();
   for(; iter != superChannelQueue.end(); iter++) {
     SuperChannel *sC_ptr = superChannelQueue.get(iter);
-    if(sC_ptr->numSCs4Request > network->maxLightSegments) {
+    if(sC_ptr->numSCs4Request > network->maxAllowedLightSegments) {
       iter = superChannelQueue.erase(iter);
       iter--; // This iter-- is used to neutralize iter++
     }
@@ -545,11 +538,12 @@ ResourceAssignment::handle_requests(
     timeCount++;
     durationCount--;
   }
-  if(LSAttributes.size() > network->maxTimeSlices)
+  if(LSAttributes.size() > network->maxAllowedTimeSlices)
     availableFlag = false;
 
   /** Real allocation and printout **/
   if(availableFlag == false) {
+    cout << "FAILED" << endl;
 
     network->numDoneRequests++;
 
@@ -567,45 +561,54 @@ ResourceAssignment::handle_requests(
 #endif
     assignedSpectralSegments.clear();
 
-    network->totalBlocks++;
+    network->numBlocks_total++;
     switch(circuitRequest_ptr->bitRate) {
       case 40:
-        network->totalBlocks_40++;
+        network->numRequests_40++;
+        network->numBlocks_40++;
         if(circuitRequest_ptr->requestType == c_AR) {
-          network->totalBlocks_AR++;
-          network->totalLPSs_AR++;
-          network->totalBlocks_40AR++;
+          network->numRequests_AR++;
+          network->numRequests_40AR++;
+          network->numBlocks_AR++;
+          network->numBlocks_40AR++;
         }
         else {
-          network->totalBlocks_IR++;
-          network->totalLPSs_IR++;
-          network->totalBlocks_40IR++;
+          network->numRequests_IR++;
+          network->numRequests_40IR++;
+          network->numBlocks_IR++;
+          network->numBlocks_40IR++;
         }
         break;
       case 100:
-        network->totalBlocks_100++;
+        network->numRequests_100++;
+        network->numBlocks_100++;
         if(circuitRequest_ptr->requestType == c_AR) {
-          network->totalBlocks_AR++;
-          network->totalLPSs_AR++;
-          network->totalBlocks_100AR++;
+          network->numRequests_AR++;
+          network->numRequests_100AR++;
+          network->numBlocks_AR++;
+          network->numBlocks_100AR++;
         }
         else {
-          network->totalBlocks_IR++;
-          network->totalLPSs_IR++;
-          network->totalBlocks_100IR++;
+          network->numRequests_IR++;
+          network->numRequests_100IR++;
+          network->numBlocks_IR++;
+          network->numBlocks_100IR++;
         }
         break;
       case 400:
-        network->totalBlocks_400++;
+        network->numRequests_400++;
+        network->numBlocks_400++;
         if(circuitRequest_ptr->requestType == c_AR) {
-          network->totalBlocks_AR++;
-          network->totalLPSs_AR++;
-          network->totalBlocks_400AR++;
+          network->numRequests_AR++;
+          network->numRequests_400AR++;
+          network->numBlocks_AR++;
+          network->numBlocks_400AR++;
         }
         else {
-          network->totalBlocks_IR++;
-          network->totalLPSs_IR++;
-          network->totalBlocks_400IR++;
+          network->numRequests_IR++;
+          network->numRequests_400IR++;
+          network->numBlocks_IR++;
+          network->numBlocks_400IR++;
         }
         break;
     }
@@ -695,66 +698,81 @@ ResourceAssignment::handle_requests(
 
     switch(circuitRequest_ptr->bitRate) {
       case 40:
-        network->totalLPSs_40 += LSAttributes.size() - 1;
-        network->totalTransponders_40 += maxLightSegments;
-        network->totalAllocations_40++;
+        network->numRequests_40++;
+        network->numLPSs_40 += LSAttributes.size() - 1;
+        network->numTransponders_40 += maxLightSegments;
+        network->numAllocations_40++;
         if(circuitRequest_ptr->requestType == c_AR) {
-          network->totalAllocations_40AR++;
-          network->totalAllocations_AR++;
-          network->totalTransponders_AR += maxLightSegments;
-          network->totalTransponders_40AR += maxLightSegments;
-          network->totalLPSs_AR += LSAttributes.size() - 1;
-          network->totalLPSs_40AR += LSAttributes.size() - 1;
+          network->numRequests_AR++;
+          network->numRequests_40AR++;
+          network->numAllocations_40AR++;
+          network->numAllocations_AR++;
+          network->numTransponders_AR += maxLightSegments;
+          network->numTransponders_40AR += maxLightSegments;
+          network->numLPSs_AR += LSAttributes.size() - 1;
+          network->numLPSs_40AR += LSAttributes.size() - 1;
         }
         else {
-          network->totalAllocations_40IR++;
-          network->totalAllocations_IR++;
-          network->totalTransponders_IR += maxLightSegments;
-          network->totalTransponders_40IR += maxLightSegments;
-          network->totalLPSs_IR += LSAttributes.size() - 1;
-          network->totalLPSs_40IR += LSAttributes.size() - 1;
+          network->numRequests_IR++;
+          network->numRequests_40IR++;
+          network->numAllocations_40IR++;
+          network->numAllocations_IR++;
+          network->numTransponders_IR += maxLightSegments;
+          network->numTransponders_40IR += maxLightSegments;
+          network->numLPSs_IR += LSAttributes.size() - 1;
+          network->numLPSs_40IR += LSAttributes.size() - 1;
         }
         break;
       case 100:
-        network->totalTransponders_100 += maxLightSegments;
-        network->totalLPSs_100 += LSAttributes.size() - 1;
-        network->totalAllocations_100++;
+        network->numRequests_100++;
+        network->numTransponders_100 += maxLightSegments;
+        network->numLPSs_100 += LSAttributes.size() - 1;
+        network->numAllocations_100++;
         if(circuitRequest_ptr->requestType == c_AR) {
-          network->totalAllocations_100AR++;
-          network->totalAllocations_AR++;
-          network->totalTransponders_AR += maxLightSegments;
-          network->totalTransponders_100AR += maxLightSegments;
-          network->totalLPSs_AR += LSAttributes.size() - 1;
-          network->totalLPSs_100AR += LSAttributes.size() - 1;
+          network->numRequests_AR++;
+          network->numRequests_100AR++;
+          network->numAllocations_100AR++;
+          network->numAllocations_AR++;
+          network->numTransponders_AR += maxLightSegments;
+          network->numTransponders_100AR += maxLightSegments;
+          network->numLPSs_AR += LSAttributes.size() - 1;
+          network->numLPSs_100AR += LSAttributes.size() - 1;
         }
         else {
-          network->totalAllocations_100IR++;
-          network->totalAllocations_IR++;
-          network->totalTransponders_IR += maxLightSegments;
-          network->totalTransponders_100IR += maxLightSegments;
-          network->totalLPSs_IR += LSAttributes.size() - 1;
-          network->totalLPSs_100IR += LSAttributes.size() - 1;
+          network->numRequests_IR++;
+          network->numRequests_100IR++;
+          network->numAllocations_100IR++;
+          network->numAllocations_IR++;
+          network->numTransponders_IR += maxLightSegments;
+          network->numTransponders_100IR += maxLightSegments;
+          network->numLPSs_IR += LSAttributes.size() - 1;
+          network->numLPSs_100IR += LSAttributes.size() - 1;
         }
         break;
       case 400:
-        network->totalTransponders_400 += maxLightSegments;
-        network->totalLPSs_400 += LSAttributes.size() - 1;
-        network->totalAllocations_400++;
+        network->numRequests_400++;
+        network->numTransponders_400 += maxLightSegments;
+        network->numLPSs_400 += LSAttributes.size() - 1;
+        network->numAllocations_400++;
         if(circuitRequest_ptr->requestType == c_AR) {
-          network->totalAllocations_400AR++;
-          network->totalAllocations_AR++;
-          network->totalTransponders_AR += maxLightSegments;
-          network->totalTransponders_400AR += maxLightSegments;
-          network->totalLPSs_AR += LSAttributes.size() - 1;
-          network->totalLPSs_400AR += LSAttributes.size() - 1;
+          network->numRequests_AR++;
+          network->numRequests_400AR++;
+          network->numAllocations_400AR++;
+          network->numAllocations_AR++;
+          network->numTransponders_AR += maxLightSegments;
+          network->numTransponders_400AR += maxLightSegments;
+          network->numLPSs_AR += LSAttributes.size() - 1;
+          network->numLPSs_400AR += LSAttributes.size() - 1;
         }
         else {
-          network->totalAllocations_400IR++;
-          network->totalAllocations_IR++;
-          network->totalTransponders_IR += maxLightSegments;
-          network->totalTransponders_400IR += maxLightSegments;
-          network->totalLPSs_IR += LSAttributes.size() - 1;
-          network->totalLPSs_400IR += LSAttributes.size() - 1;
+          network->numRequests_IR++;
+          network->numRequests_400IR++;
+          network->numAllocations_400IR++;
+          network->numAllocations_IR++;
+          network->numTransponders_IR += maxLightSegments;
+          network->numTransponders_400IR += maxLightSegments;
+          network->numLPSs_IR += LSAttributes.size() - 1;
+          network->numLPSs_400IR += LSAttributes.size() - 1;
         }
         break;
     }
@@ -795,16 +813,13 @@ ResourceAssignment::handle_requests(
         network->num400SC6 += LSAttributes[0].size();
     }
 
-    network->numAllocatedRequests++;
+    network->numAllocations_total++;
     network->numTransponders += maxLightSegments;
-    // network->numSSs4Data
-    //     = (LSAttributes[0][0][4] - LSAttributes[0][0][3] + 1 -
-    //     GB)
-    //       * LSAttributes[0].size();
-    network->totalTransponders += maxLightSegments;
+    network->numTransponders_total += maxLightSegments;
     network->totalHoldingTime += circuitRequest_ptr->duration;
     // network->totalCoresUsed++;
-    network->totalLPSs += LSAttributes.size() - 1;
+    network->numLPSs = LSAttributes.size() - 1;
+    network->numLPSs_total += LSAttributes.size() - 1;
     // network->totalSSs4Data += (LSAttributes[0][0][4]
     //                            - LSAttributes[0][0][3] + 1 - GB)
     //                           * LSAttributes[0].size();

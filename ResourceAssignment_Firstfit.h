@@ -4,6 +4,7 @@
 #include "Event.h"
 #include "EventQueue.h"
 #include "ModulationFormats.h"
+#include "Network.h"
 #include "RoutingTable.h"
 #include <cmath>
 
@@ -194,8 +195,6 @@ public:
   handle_requests(shared_ptr<CircuitRequest> circuitRequest_ptr);
   void
   handle_releases(shared_ptr<CircuitRelease> circuitRelease_ptr);
-  long long
-  precision_double(double num);
   void
   enlarge_time_snapshot(
       list<vector<vector<vector<vector<bool>>>>> &timeSnapshots,

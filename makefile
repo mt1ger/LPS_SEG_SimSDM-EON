@@ -1,4 +1,5 @@
-CC=g++-11
+# CC=g++-11
+CC=clang++
 CPPSTD=-std=c++20
 LDFLAGS=#-labt
 CFLAGS=-c -Wall

@@ -152,8 +152,8 @@ txtParse::parse()
   Metric maxTransponders(
       "maxTransponders"); // Maximum number of transponders that are
                                // simultaneously used
-  Metric totalTransponders(
-      "totalTransponders");  // The total number of transponders used for this
+  Metric numTransponders(
+      "numTransponders");  // The total number of transponders used for this
                              // simulation run
   Metric CpR("CpR");         // Number of Cores per request
   Metric avgHoldingTime("avgHoldingTime");       // Holding time per request
@@ -188,47 +188,47 @@ txtParse::parse()
       "Numof50SC2"); // Number of 50 Gb/s with QPSK super channel used
   Metric Numof25SC(
       "Numof25SC");            // Number of 25 Gb/s with QPSK super channel used
-  Metric totalBlocks_AR("totalBlocks_AR"); // Number of blocked AR request
-  Metric totalBlocks_IR("totalBlocks_IR"); // Number of blocked IR request
-  Metric totalBlocks_400(
-      "totalBlocks_400"); // Number of blocked 400 Gb/s request
-  Metric totalBlocks_400AR(
-      "totalBlocks_400AR"); // Number of blocked 400 Gb/s AR request
-  Metric totalBlocks_400IR(
-      "totalBlocks_400IR"); // Number of blocked 400 Gb/s IR request
-  Metric totalBlocks_100(
-      "totalBlocks_100"); // Number of blocked 100 Gb/s request
-  Metric totalBlocks_100AR(
-      "totalBlocks_100AR"); // Number of blocked 100 Gb/s AR request
-  Metric totalBlocks_100IR(
-      "totalBlocks_100IR"); // Number of blocked 100 Gb/s IR request
-  Metric totalBlocks_40("totalBlocks_40"); // Number of blocked 40 Gb/s request
-  Metric totalBlocks_40AR(
-      "totalBlocks_40AR"); // Number of blocked 40 Gb/s AR request
-  Metric totalBlocks_40IR(
-      "totalBlocks_40IR"); // Number of blocked 40 Gb/s IR request
-  Metric totalTransponders_AR(
-      "totalTransponders_AR"); // Number of blocked AR request
-  Metric totalTransponders_IR(
-      "totalTransponders_IR"); // Number of blocked IR request
-  Metric totalTransponders_400(
-      "totalTransponders_400"); // Number of blocked 400 Gb/s request
-  Metric totalTransponders_400AR(
-      "totalTransponders_400AR"); // Number of blocked 400 Gb/s AR request
-  Metric totalTransponders_400IR(
-      "totalTransponders_400IR"); // Number of blocked 400 Gb/s IR request
-  Metric totalTransponders_100(
-      "totalTransponders_100"); // Number of blocked 100 Gb/s request
-  Metric totalTransponders_100AR(
-      "totalTransponders_100AR"); // Number of blocked 100 Gb/s AR request
-  Metric totalTransponders_100IR(
-      "totalTransponders_100IR"); // Number of blocked 100 Gb/s IR request
-  Metric totalTransponders_40(
-      "totalTransponders_40"); // Number of blocked 40 Gb/s request
-  Metric totalTransponders_40AR(
-      "totalTransponders_40AR"); // Number of blocked 40 Gb/s AR request
-  Metric totalTransponders_40IR(
-      "totalTransponders_40IR");   // Number of blocked 40 Gb/s IR request
+  Metric numBlocks_AR("numBlocks_AR"); // Number of blocked AR request
+  Metric numBlocks_IR("numBlocks_IR"); // Number of blocked IR request
+  Metric numBlocks_400(
+      "numBlocks_400"); // Number of blocked 400 Gb/s request
+  Metric numBlocks_400AR(
+      "numBlocks_400AR"); // Number of blocked 400 Gb/s AR request
+  Metric numBlocks_400IR(
+      "numBlocks_400IR"); // Number of blocked 400 Gb/s IR request
+  Metric numBlocks_100(
+      "numBlocks_100"); // Number of blocked 100 Gb/s request
+  Metric numBlocks_100AR(
+      "numBlocks_100AR"); // Number of blocked 100 Gb/s AR request
+  Metric numBlocks_100IR(
+      "numBlocks_100IR"); // Number of blocked 100 Gb/s IR request
+  Metric numBlocks_40("numBlocks_40"); // Number of blocked 40 Gb/s request
+  Metric numBlocks_40AR(
+      "numBlocks_40AR"); // Number of blocked 40 Gb/s AR request
+  Metric numBlocks_40IR(
+      "numBlocks_40IR"); // Number of blocked 40 Gb/s IR request
+  Metric numTransponders_AR(
+      "numTransponders_AR"); // Number of blocked AR request
+  Metric numTransponders_IR(
+      "numTransponders_IR"); // Number of blocked IR request
+  Metric numTransponders_400(
+      "numTransponders_400"); // Number of blocked 400 Gb/s request
+  Metric numTransponders_400AR(
+      "numTransponders_400AR"); // Number of blocked 400 Gb/s AR request
+  Metric numTransponders_400IR(
+      "numTransponders_400IR"); // Number of blocked 400 Gb/s IR request
+  Metric numTransponders_100(
+      "numTransponders_100"); // Number of blocked 100 Gb/s request
+  Metric numTransponders_100AR(
+      "numTransponders_100AR"); // Number of blocked 100 Gb/s AR request
+  Metric numTransponders_100IR(
+      "numTransponders_100IR"); // Number of blocked 100 Gb/s IR request
+  Metric numTransponders_40(
+      "numTransponders_40"); // Number of blocked 40 Gb/s request
+  Metric numTransponders_40AR(
+      "numTransponders_40AR"); // Number of blocked 40 Gb/s AR request
+  Metric numTransponders_40IR(
+      "numTransponders_40IR");   // Number of blocked 40 Gb/s IR request
   Metric avgTransponders_AR("avgTransponders_AR");         // Number of blocked AR request
   Metric avgTransponders_IR("avgTransponders_IR");         // Number of blocked IR request
   Metric avgTransponders_400("avgTransponders_400");       // Number of blocked 400 Gb/s request
@@ -267,7 +267,7 @@ txtParse::parse()
   /*** Initialization:  {core, erlang, data1, data2, data3, ...} ***/
   initialization(&BP);
   initialization(&maxTransponders);
-  initialization(&totalTransponders);
+  initialization(&numTransponders);
   initialization(&CpR);
   initialization(&avgHoldingTime);
   initialization(&avgTransponders);
@@ -288,28 +288,28 @@ txtParse::parse()
   initialization(&Numof50SC4);
   initialization(&Numof50SC2);
   initialization(&Numof25SC);
-  initialization(&totalBlocks_AR);
-  initialization(&totalBlocks_IR);
-  initialization(&totalBlocks_400);
-  initialization(&totalBlocks_400AR);
-  initialization(&totalBlocks_400IR);
-  initialization(&totalBlocks_100);
-  initialization(&totalBlocks_100AR);
-  initialization(&totalBlocks_100IR);
-  initialization(&totalBlocks_40);
-  initialization(&totalBlocks_40AR);
-  initialization(&totalBlocks_40IR);
-  initialization(&totalTransponders_AR);
-  initialization(&totalTransponders_IR);
-  initialization(&totalTransponders_400);
-  initialization(&totalTransponders_400AR);
-  initialization(&totalTransponders_400IR);
-  initialization(&totalTransponders_100);
-  initialization(&totalTransponders_100AR);
-  initialization(&totalTransponders_100IR);
-  initialization(&totalTransponders_40);
-  initialization(&totalTransponders_40AR);
-  initialization(&totalTransponders_40IR);
+  initialization(&numBlocks_AR);
+  initialization(&numBlocks_IR);
+  initialization(&numBlocks_400);
+  initialization(&numBlocks_400AR);
+  initialization(&numBlocks_400IR);
+  initialization(&numBlocks_100);
+  initialization(&numBlocks_100AR);
+  initialization(&numBlocks_100IR);
+  initialization(&numBlocks_40);
+  initialization(&numBlocks_40AR);
+  initialization(&numBlocks_40IR);
+  initialization(&numTransponders_AR);
+  initialization(&numTransponders_IR);
+  initialization(&numTransponders_400);
+  initialization(&numTransponders_400AR);
+  initialization(&numTransponders_400IR);
+  initialization(&numTransponders_100);
+  initialization(&numTransponders_100AR);
+  initialization(&numTransponders_100IR);
+  initialization(&numTransponders_40);
+  initialization(&numTransponders_40AR);
+  initialization(&numTransponders_40IR);
   initialization(&avgTransponders_AR);
   initialization(&avgTransponders_IR);
   initialization(&avgTransponders_400);
@@ -345,7 +345,7 @@ txtParse::parse()
 
     extraction(arr_strings[3], &BP, core, erlang, seed);
     extraction(arr_strings[4], &maxTransponders, core, erlang, seed);
-    extraction(arr_strings[5], &totalTransponders, core, erlang, seed);
+    extraction(arr_strings[5], &numTransponders, core, erlang, seed);
     extraction(arr_strings[6], &CpR, core, erlang, seed);
     extraction(arr_strings[7], &avgHoldingTime, core, erlang, seed);
     extraction(arr_strings[8], &avgTransponders, core, erlang, seed);
@@ -366,28 +366,28 @@ txtParse::parse()
     extraction(arr_strings[23], &Numof50SC4, core, erlang, seed);
     extraction(arr_strings[24], &Numof50SC2, core, erlang, seed);
     extraction(arr_strings[25], &Numof25SC, core, erlang, seed);
-    extraction(arr_strings[26], &totalBlocks_AR, core, erlang, seed);
-    extraction(arr_strings[27], &totalBlocks_IR, core, erlang, seed);
-    extraction(arr_strings[28], &totalBlocks_400, core, erlang, seed);
-    extraction(arr_strings[29], &totalBlocks_400AR, core, erlang, seed);
-    extraction(arr_strings[30], &totalBlocks_400IR, core, erlang, seed);
-    extraction(arr_strings[31], &totalBlocks_100, core, erlang, seed);
-    extraction(arr_strings[32], &totalBlocks_100AR, core, erlang, seed);
-    extraction(arr_strings[33], &totalBlocks_100IR, core, erlang, seed);
-    extraction(arr_strings[34], &totalBlocks_40, core, erlang, seed);
-    extraction(arr_strings[35], &totalBlocks_40AR, core, erlang, seed);
-    extraction(arr_strings[36], &totalBlocks_40IR, core, erlang, seed);
-    extraction(arr_strings[37], &totalTransponders_AR, core, erlang, seed);
-    extraction(arr_strings[38], &totalTransponders_IR, core, erlang, seed);
-    extraction(arr_strings[39], &totalTransponders_400, core, erlang, seed);
-    extraction(arr_strings[40], &totalTransponders_400AR, core, erlang, seed);
-    extraction(arr_strings[41], &totalTransponders_400IR, core, erlang, seed);
-    extraction(arr_strings[42], &totalTransponders_100, core, erlang, seed);
-    extraction(arr_strings[43], &totalTransponders_100AR, core, erlang, seed);
-    extraction(arr_strings[44], &totalTransponders_100IR, core, erlang, seed);
-    extraction(arr_strings[45], &totalTransponders_40, core, erlang, seed);
-    extraction(arr_strings[46], &totalTransponders_40AR, core, erlang, seed);
-    extraction(arr_strings[47], &totalTransponders_40IR, core, erlang, seed);
+    extraction(arr_strings[26], &numBlocks_AR, core, erlang, seed);
+    extraction(arr_strings[27], &numBlocks_IR, core, erlang, seed);
+    extraction(arr_strings[28], &numBlocks_400, core, erlang, seed);
+    extraction(arr_strings[29], &numBlocks_400AR, core, erlang, seed);
+    extraction(arr_strings[30], &numBlocks_400IR, core, erlang, seed);
+    extraction(arr_strings[31], &numBlocks_100, core, erlang, seed);
+    extraction(arr_strings[32], &numBlocks_100AR, core, erlang, seed);
+    extraction(arr_strings[33], &numBlocks_100IR, core, erlang, seed);
+    extraction(arr_strings[34], &numBlocks_40, core, erlang, seed);
+    extraction(arr_strings[35], &numBlocks_40AR, core, erlang, seed);
+    extraction(arr_strings[36], &numBlocks_40IR, core, erlang, seed);
+    extraction(arr_strings[37], &numTransponders_AR, core, erlang, seed);
+    extraction(arr_strings[38], &numTransponders_IR, core, erlang, seed);
+    extraction(arr_strings[39], &numTransponders_400, core, erlang, seed);
+    extraction(arr_strings[40], &numTransponders_400AR, core, erlang, seed);
+    extraction(arr_strings[41], &numTransponders_400IR, core, erlang, seed);
+    extraction(arr_strings[42], &numTransponders_100, core, erlang, seed);
+    extraction(arr_strings[43], &numTransponders_100AR, core, erlang, seed);
+    extraction(arr_strings[44], &numTransponders_100IR, core, erlang, seed);
+    extraction(arr_strings[45], &numTransponders_40, core, erlang, seed);
+    extraction(arr_strings[46], &numTransponders_40AR, core, erlang, seed);
+    extraction(arr_strings[47], &numTransponders_40IR, core, erlang, seed);
     extraction(arr_strings[48], &avgTransponders_AR, core, erlang, seed);
     extraction(arr_strings[49], &avgTransponders_IR, core, erlang, seed);
     extraction(arr_strings[50], &avgTransponders_400, core, erlang, seed);
@@ -429,7 +429,7 @@ txtParse::parse()
   /*** Compute avg of data ***/
   avg_data(&BP);
   avg_data(&maxTransponders);
-  avg_data(&totalTransponders);
+  avg_data(&numTransponders);
   avg_data(&CpR);
   avg_data(&avgHoldingTime);
   avg_data(&avgTransponders);
@@ -450,28 +450,28 @@ txtParse::parse()
   avg_data(&Numof50SC4);
   avg_data(&Numof50SC2);
   avg_data(&Numof25SC);
-  avg_data(&totalBlocks_AR);
-  avg_data(&totalBlocks_IR);
-  avg_data(&totalBlocks_400);
-  avg_data(&totalBlocks_400AR);
-  avg_data(&totalBlocks_400IR);
-  avg_data(&totalBlocks_100);
-  avg_data(&totalBlocks_100AR);
-  avg_data(&totalBlocks_100IR);
-  avg_data(&totalBlocks_40);
-  avg_data(&totalBlocks_40AR);
-  avg_data(&totalBlocks_40IR);
-  avg_data(&totalTransponders_AR);
-  avg_data(&totalTransponders_IR);
-  avg_data(&totalTransponders_400);
-  avg_data(&totalTransponders_400AR);
-  avg_data(&totalTransponders_400IR);
-  avg_data(&totalTransponders_100);
-  avg_data(&totalTransponders_100AR);
-  avg_data(&totalTransponders_100IR);
-  avg_data(&totalTransponders_40);
-  avg_data(&totalTransponders_40AR);
-  avg_data(&totalTransponders_40IR);
+  avg_data(&numBlocks_AR);
+  avg_data(&numBlocks_IR);
+  avg_data(&numBlocks_400);
+  avg_data(&numBlocks_400AR);
+  avg_data(&numBlocks_400IR);
+  avg_data(&numBlocks_100);
+  avg_data(&numBlocks_100AR);
+  avg_data(&numBlocks_100IR);
+  avg_data(&numBlocks_40);
+  avg_data(&numBlocks_40AR);
+  avg_data(&numBlocks_40IR);
+  avg_data(&numTransponders_AR);
+  avg_data(&numTransponders_IR);
+  avg_data(&numTransponders_400);
+  avg_data(&numTransponders_400AR);
+  avg_data(&numTransponders_400IR);
+  avg_data(&numTransponders_100);
+  avg_data(&numTransponders_100AR);
+  avg_data(&numTransponders_100IR);
+  avg_data(&numTransponders_40);
+  avg_data(&numTransponders_40AR);
+  avg_data(&numTransponders_40IR);
   avg_data(&avgTransponders_AR);
   avg_data(&avgTransponders_IR);
   avg_data(&avgTransponders_400);
@@ -512,7 +512,7 @@ txtParse::parse()
   /*** Write data to the associated file ***/
   write_to_files(&BP);
   write_to_files(&maxTransponders);
-  write_to_files(&totalTransponders);
+  write_to_files(&numTransponders);
   write_to_files(&CpR);
   write_to_files(&avgHoldingTime);
   write_to_files(&avgTransponders);
@@ -533,28 +533,28 @@ txtParse::parse()
   write_to_files(&Numof50SC4);
   write_to_files(&Numof50SC2);
   write_to_files(&Numof25SC);
-  write_to_files(&totalBlocks_AR);
-  write_to_files(&totalBlocks_IR);
-  write_to_files(&totalBlocks_400);
-  write_to_files(&totalBlocks_400AR);
-  write_to_files(&totalBlocks_400IR);
-  write_to_files(&totalBlocks_100);
-  write_to_files(&totalBlocks_100AR);
-  write_to_files(&totalBlocks_100IR);
-  write_to_files(&totalBlocks_40);
-  write_to_files(&totalBlocks_40AR);
-  write_to_files(&totalBlocks_40IR);
-  write_to_files(&totalTransponders_AR);
-  write_to_files(&totalTransponders_IR);
-  write_to_files(&totalTransponders_400);
-  write_to_files(&totalTransponders_400AR);
-  write_to_files(&totalTransponders_400IR);
-  write_to_files(&totalTransponders_100);
-  write_to_files(&totalTransponders_100AR);
-  write_to_files(&totalTransponders_100IR);
-  write_to_files(&totalTransponders_40);
-  write_to_files(&totalTransponders_40AR);
-  write_to_files(&totalTransponders_40IR);
+  write_to_files(&numBlocks_AR);
+  write_to_files(&numBlocks_IR);
+  write_to_files(&numBlocks_400);
+  write_to_files(&numBlocks_400AR);
+  write_to_files(&numBlocks_400IR);
+  write_to_files(&numBlocks_100);
+  write_to_files(&numBlocks_100AR);
+  write_to_files(&numBlocks_100IR);
+  write_to_files(&numBlocks_40);
+  write_to_files(&numBlocks_40AR);
+  write_to_files(&numBlocks_40IR);
+  write_to_files(&numTransponders_AR);
+  write_to_files(&numTransponders_IR);
+  write_to_files(&numTransponders_400);
+  write_to_files(&numTransponders_400AR);
+  write_to_files(&numTransponders_400IR);
+  write_to_files(&numTransponders_100);
+  write_to_files(&numTransponders_100AR);
+  write_to_files(&numTransponders_100IR);
+  write_to_files(&numTransponders_40);
+  write_to_files(&numTransponders_40AR);
+  write_to_files(&numTransponders_40IR);
   write_to_files(&avgTransponders_AR);
   write_to_files(&avgTransponders_IR);
   write_to_files(&avgTransponders_400);

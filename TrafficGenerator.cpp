@@ -23,76 +23,86 @@ TrafficGenerator::gen_temporal_parameters(double *time, double LorM) {
 
 void
 TrafficGenerator::gen_first_request() {
-  unsigned int src, dest, occupiedSpectralSlots, datasize;
+  unsigned int      src, dest, occupiedSpectralSlots, dataSize;
   double       arrivalTime = 0;
   double       duration;
   double       bookAheadTime = 0;
-  int          type          = 0;
   shared_ptr<Event> event_ptr;
   Request_t         requestType;
 
   gen_unicast_sd(&src, &dest);
   gen_temporal_parameters(&duration, network->mu);
-  duration = ceil(duration * 1000) / 1000;
+  duration = ceil(duration * (1000 / TIMESLOT_LEN)) / (1000 / TIMESLOT_LEN);
 
+  /* Types: 1. 400AR; 2. 400IR; 3, 100AR; 4. 100IR; 5. 40AR; 6. 40IR */
   do {
-    do {
-      type = uniform_rv(4);
-    }
-    while(type == 0 || type == 4);
+    auto type = rand() % 6 + 1;
     switch(type) {
       case 1:
-        if(network->trafficGen_numRequest_40 > 0) {
-          network->trafficGen_numRequest_40--;
-          datasize = 40;
+        if(network->trafficGen_numRequests_400AR > 0) {
+          network->trafficGen_numRequests_400AR--;
+          dataSize      = 400;
+          requestType = c_AR;
+          bookAheadTime = (int)1 / network->mu;
         }
         else
-          datasize = 0;
+          dataSize = 0;
         break;
       case 2:
-        if(network->trafficGen_numRequest_100 > 0) {
-          network->trafficGen_numRequest_100--;
-          datasize = 100;
+        if(network->trafficGen_numRequests_400IR > 0) {
+          network->trafficGen_numRequests_400IR--;
+          dataSize    = 400;
+          requestType = c_IR;
         }
         else
-          datasize = 0;
+          dataSize = 0;
         break;
       case 3:
-        if(network->trafficGen_numRequest_400 > 0) {
-          network->trafficGen_numRequest_400--;
-          datasize = 400;
+        if(network->trafficGen_numRequests_100AR > 0) {
+          network->trafficGen_numRequests_100AR--;
+          dataSize      = 100;
+          requestType   = c_AR;
+          bookAheadTime = (int)1 / network->mu;
         }
         else
-          datasize = 0;
+          dataSize = 0;
+        break;
+      case 4:
+        if(network->trafficGen_numRequests_100IR > 0) {
+          network->trafficGen_numRequests_100IR--;
+          dataSize    = 100;
+          requestType = c_IR;
+        }
+        else
+          dataSize = 0;
+        break;
+      case 5:
+        if(network->trafficGen_numRequests_40AR > 0) {
+          network->trafficGen_numRequests_40AR--;
+          dataSize      = 40;
+          requestType   = c_AR;
+          bookAheadTime = (int)1 / network->mu;
+        }
+        else
+          dataSize = 0;
+        break;
+      case 6:
+        if(network->trafficGen_numRequests_40IR > 0) {
+          network->trafficGen_numRequests_40IR--;
+          dataSize    = 40;
+          requestType = c_IR;
+        }
+        else
+          dataSize = 0;
         break;
     }
   }
-  while(datasize == 0);
+  while(dataSize == 0);
 
-  occupiedSpectralSlots = ceil((double)datasize / BW_SPECSLOT);
-
-  while(1) {
-    int requestTypeNum;
-    do {
-      requestTypeNum = uniform_rv(2);
-    }
-    while(requestTypeNum == 2);
-    // 0 represents IR and 1 represents AR
-    if(requestTypeNum == 1 && network->trafficGen_numRequest_AR != 0) {
-      network->trafficGen_numRequest_AR--;
-      requestType   = c_AR;
-      bookAheadTime = (int)1 / network->mu;
-      break;
-    }
-    else if(requestTypeNum == 0 && network->trafficGen_numRequest_IR != 0) {
-      network->trafficGen_numRequest_IR--;
-      requestType = c_IR;
-      break;
-    }
-  }
+  occupiedSpectralSlots = ceil((double)dataSize / BW_SPECSLOT);
 
   event_ptr = make_shared<CircuitRequest>(
-      src, dest, arrivalTime, bookAheadTime, duration, datasize,
+      src, dest, arrivalTime, bookAheadTime, duration, dataSize,
       occupiedSpectralSlots, network->requestCounter, requestType);
   network->requestCounter++;
 
@@ -120,47 +130,72 @@ void
 TrafficGenerator::gen_request(double systemTime) {
   unsigned int src, dest, dataSize, occupiedSpectralSlots, bookAheadTime = 0;
   double       time, arrivalTime, duration;
-  int          type = 0;
-  // CircuitRequest *request;
   shared_ptr<Event> event_ptr;
   Request_t         requestType;
 
   gen_unicast_sd(&src, &dest);
   gen_temporal_parameters(&duration, network->mu);
-  duration = ceil(duration * 1000) / 1000;
+  duration = ceil(duration * (1000 / TIMESLOT_LEN)) / (1000 / TIMESLOT_LEN);
   gen_temporal_parameters(&time, network->lambda);
-  time = ceil(time * 1000) / 1000;
+  time = ceil(time * (1000 / TIMESLOT_LEN)) / (1000 / TIMESLOT_LEN);
 
-  // do {
-  // 	datasize = uniform_rv (MAX_DATASIZE_REQUEST);
-  // } while (datasize == 0);
-
+  /* Types: 1. 400AR; 2. 400IR; 3, 100AR; 4. 100IR; 5. 40AR; 6. 40IR */
   do {
-    do {
-      type = uniform_rv(4);
-    }
-    while(type == 0 || type == 4);
+    auto type = rand() % 6 + 1;
     switch(type) {
       case 1:
-        if(network->trafficGen_numRequest_40 > 0) {
-          network->trafficGen_numRequest_40--;
-          dataSize = 40;
+        if(network->trafficGen_numRequests_400AR > 0) {
+          network->trafficGen_numRequests_400AR--;
+          dataSize      = 400;
+          requestType   = c_AR;
+          bookAheadTime = (int)1 / network->mu;
         }
         else
           dataSize = 0;
         break;
       case 2:
-        if(network->trafficGen_numRequest_100 > 0) {
-          network->trafficGen_numRequest_100--;
-          dataSize = 100;
+        if(network->trafficGen_numRequests_400IR > 0) {
+          network->trafficGen_numRequests_400IR--;
+          dataSize    = 400;
+          requestType = c_IR;
         }
         else
           dataSize = 0;
         break;
       case 3:
-        if(network->trafficGen_numRequest_400 > 0) {
-          network->trafficGen_numRequest_400--;
-          dataSize = 400;
+        if(network->trafficGen_numRequests_100AR > 0) {
+          network->trafficGen_numRequests_100AR--;
+          dataSize      = 100;
+          requestType   = c_AR;
+          bookAheadTime = (int)1 / network->mu;
+        }
+        else
+          dataSize = 0;
+        break;
+      case 4:
+        if(network->trafficGen_numRequests_100IR > 0) {
+          network->trafficGen_numRequests_100IR--;
+          dataSize    = 100;
+          requestType = c_IR;
+        }
+        else
+          dataSize = 0;
+        break;
+      case 5:
+        if(network->trafficGen_numRequests_40AR > 0) {
+          network->trafficGen_numRequests_40AR--;
+          dataSize      = 40;
+          requestType   = c_AR;
+          bookAheadTime = (int)1 / network->mu;
+        }
+        else
+          dataSize = 0;
+        break;
+      case 6:
+        if(network->trafficGen_numRequests_40IR > 0) {
+          network->trafficGen_numRequests_40IR--;
+          dataSize    = 40;
+          requestType = c_IR;
         }
         else
           dataSize = 0;
@@ -172,33 +207,9 @@ TrafficGenerator::gen_request(double systemTime) {
   occupiedSpectralSlots = ceil((double)dataSize / BW_SPECSLOT);
   arrivalTime           = systemTime + time;
 
-  while(1) {
-    int requestTypeNum;
-    do {
-      requestTypeNum = uniform_rv(2);
-    }
-    while(requestTypeNum == 2);
-    // 0 represents IR and 1 represents AR
-    if(requestTypeNum == 1 && network->trafficGen_numRequest_AR != 0) {
-      network->trafficGen_numRequest_AR--;
-      requestType   = c_AR;
-      bookAheadTime = (int)1 / network->mu;
-      break;
-    }
-    else if(requestTypeNum == 0 && network->trafficGen_numRequest_IR != 0) {
-      network->trafficGen_numRequest_IR--;
-      requestType = c_IR;
-      break;
-    }
-  }
-
   event_ptr = make_shared<CircuitRequest>(
       src, dest, arrivalTime, bookAheadTime, duration, dataSize,
       occupiedSpectralSlots, network->requestCounter, requestType);
-  // request = new CircuitRequest(src, dest, arrivalTime,
-  // bookAheadTime, duration,
-  //                              datasize, occupiedSpectralSlots,
-  // network->requestCounter, requestType);
 
   network->requestCounter++;
 

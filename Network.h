@@ -31,6 +31,7 @@
 // #define NUMOFSPECTRALSLOTS 40
 #define BW_SPECSLOT         12.5
 #define AR_RATIO            0.5
+#define TIMESLOT_LEN        1
 
 using namespace std;
 
@@ -53,10 +54,10 @@ public:
   char         fileName[500];
   // lambda: the mean of input rate; mu: 1/mu is the mean of holding time
   double       lambda, mu;
-  long long    numRequest;
+  long long    numRequests;
   unsigned int numCores;
-  size_t       maxLightSegments;
-  size_t       maxTimeSlices;
+  size_t       maxAllowedLightSegments;
+  size_t       maxAllowedTimeSlices;
 
   /* Topology Variables */
   unsigned int                numNodes;
@@ -84,21 +85,21 @@ public:
 
   /**** Metrics Collection ****/
   /*** Overall ***/
-  long long numAllocatedRequests;
-  long long numDoneRequests;    // Number of requests which are successfully
-                                  // allocated, released, or blocked will be
-                                  // considered as DoneRequests
-
+  // Number of requests which are successfully allocated, released, or blocked
+  // will be considered as DoneRequests
+  long long numDoneRequests;
   // Collect the number of transponders simultaneously used after
   // at the time slot for a request allocation
   long long numTransponders;
   // Store the maximum number of transponders used simultaneously at any
   // time slot for one simlulation run
   long long maxTransponders;
-  long long numSSs4Data; // Total number of data spectral slots occupied after
-                           // a request allocation
-  long long maxSSs4Data; // Maximum number of data spectral slot occupied
-                              // simultaneously
+  long long numLPSs;
+  long long maxLPSs;
+  // Total number of data spectral slots occupied after a request allocation
+  long long numSSs4Data;
+  // Maximum number of data spectral slot occupied simultaneously
+  long long maxSSs4Data;
 
   double    totalHoldingTime;
   long long totalCoresUsed;
@@ -115,13 +116,13 @@ public:
   double    avgHybridFrag;
 
   /*** Break Down Data ***/
-  // Light-segments Utilization Distribution
-  long long num400SC6; // number of 64QAM 400Gb/s super
-                         // channel used per simulation
-  long long num400SC4; // number of 16QAM 400Gb/s super
-                         // channel used per simulation
-  long long num400SC2; // number of QPSK 400Gb/s super
-                         // channel used per simulation
+  /* Light-segments Utilization Distribution */
+  // number of 64QAM 400Gb/s super channel used per simulation
+  long long num400SC6;
+  // number of 16QAM 400Gb/s super channel used per simulation
+  long long num400SC4;
+  // number of QPSK 400Gb/s super channel used per simulation
+  long long num400SC2;
   long long num200SC6; // number of 64QAM 200Gb/s super
                          // channel used per simulation
   long long num200SC4; // number of 16QAM 200Gb/s super
@@ -143,46 +144,46 @@ public:
   long long num25SC;  // number of 25Gb/s super channel used per simulation
 
   // Total Blocks
-  long long totalBlocks;
-  long long totalBlocks_AR;
-  long long totalBlocks_IR;
-  long long totalBlocks_400;
-  long long totalBlocks_400AR;
-  long long totalBlocks_400IR;
-  long long totalBlocks_100;
-  long long totalBlocks_100AR;
-  long long totalBlocks_100IR;
-  long long totalBlocks_40;
-  long long totalBlocks_40AR;
-  long long totalBlocks_40IR;
+  long long numBlocks_total;
+  long long numBlocks_AR;
+  long long numBlocks_IR;
+  long long numBlocks_400;
+  long long numBlocks_400AR;
+  long long numBlocks_400IR;
+  long long numBlocks_100;
+  long long numBlocks_100AR;
+  long long numBlocks_100IR;
+  long long numBlocks_40;
+  long long numBlocks_40AR;
+  long long numBlocks_40IR;
 
   // Total Alloctions
-  long long totalAllocations;
-  long long totalAllocations_AR;
-  long long totalAllocations_IR;
-  long long totalAllocations_400;
-  long long totalAllocations_400AR;
-  long long totalAllocations_400IR;
-  long long totalAllocations_100;
-  long long totalAllocations_100AR;
-  long long totalAllocations_100IR;
-  long long totalAllocations_40;
-  long long totalAllocations_40AR;
-  long long totalAllocations_40IR;
+  long long numAllocations_total;
+  long long numAllocations_AR;
+  long long numAllocations_IR;
+  long long numAllocations_400;
+  long long numAllocations_400AR;
+  long long numAllocations_400IR;
+  long long numAllocations_100;
+  long long numAllocations_100AR;
+  long long numAllocations_100IR;
+  long long numAllocations_40;
+  long long numAllocations_40AR;
+  long long numAllocations_40IR;
 
   // Total Transponders
-  long long totalTransponders;
-  long long totalTransponders_AR;
-  long long totalTransponders_IR;
-  long long totalTransponders_400;
-  long long totalTransponders_400AR;
-  long long totalTransponders_400IR;
-  long long totalTransponders_100;
-  long long totalTransponders_100AR;
-  long long totalTransponders_100IR;
-  long long totalTransponders_40;
-  long long totalTransponders_40AR;
-  long long totalTransponders_40IR;
+  long long numTransponders_total;
+  long long numTransponders_AR;
+  long long numTransponders_IR;
+  long long numTransponders_400;
+  long long numTransponders_400AR;
+  long long numTransponders_400IR;
+  long long numTransponders_100;
+  long long numTransponders_100AR;
+  long long numTransponders_100IR;
+  long long numTransponders_40;
+  long long numTransponders_40AR;
+  long long numTransponders_40IR;
 
   // Average Transponders per Request
   double avgTransponders;
@@ -199,52 +200,65 @@ public:
   double avgTransponders_40IR;
 
   // Total LPSs
-  long long totalLPSs;
-  long long totalLPSs_AR;
-  long long totalLPSs_IR;
-  long long totalLPSs_400;
-  long long totalLPSs_400AR;
-  long long totalLPSs_400IR;
-  long long totalLPSs_100;
-  long long totalLPSs_100AR;
-  long long totalLPSs_100IR;
-  long long totalLPSs_40;
-  long long totalLPSs_40AR;
-  long long totalLPSs_40IR;
+  long long numLPSs_total;
+  long long numLPSs_AR;
+  long long numLPSs_IR;
+  long long numLPSs_400;
+  long long numLPSs_400AR;
+  long long numLPSs_400IR;
+  long long numLPSs_100;
+  long long numLPSs_100AR;
+  long long numLPSs_100IR;
+  long long numLPSs_40;
+  long long numLPSs_40AR;
+  long long numLPSs_40IR;
 
   // Average LPS per Request
-  double LPSspR;
-  double LPSspR_AR;
-  double LPSspR_IR;
-  double LPSspR_400;
-  double LPSspR_400AR;
-  double LPSspR_400IR;
-  double LPSspR_100;
-  double LPSspR_100AR;
-  double LPSspR_100IR;
-  double LPSspR_40;
-  double LPSspR_40AR;
-  double LPSspR_40IR;
+  double avgLPSs;
+  double avgLPSs_AR;
+  double avgLPSs_IR;
+  double avgLPSs_400;
+  double avgLPSs_400AR;
+  double avgLPSs_400IR;
+  double avgLPSs_100;
+  double avgLPSs_100AR;
+  double avgLPSs_100IR;
+  double avgLPSs_40;
+  double avgLPSs_40AR;
+  double avgLPSs_40IR;
 
   // The bit rates for candidate super channels
   vector<int> candidateBR {25, 50, 100, 200, 400};
 
   /***  Debugging Variables ***/
   vector<int> blockedRequests; // The vector of IDs for blocked request
-  long long   numRequest_AR;
-  long long   numRequest_IR;
-  long long   numRequest_400;
-  long long   numRequest_100;
-  long long   numRequest_40;
+  long long   numRequests_AR;
+  long long   numRequests_IR;
+  long long   numRequests_400;
+  long long   numRequests_400AR;
+  long long   numRequests_400IR;
+  long long   numRequests_100;
+  long long   numRequests_100AR;
+  long long   numRequests_100IR;
+  long long   numRequests_40;
+  long long   numRequests_40AR;
+  long long   numRequests_40IR;
 
   /*** Variables for Traffic Generator ***/
-  long long trafficGen_numRequest_AR;
-  long long trafficGen_numRequest_IR;
-  long long trafficGen_numRequest_400;
-  long long trafficGen_numRequest_100;
-  long long trafficGen_numRequest_40;
+  long long trafficGen_numRequests_400AR;
+  long long trafficGen_numRequests_400IR;
+  long long trafficGen_numRequests_100AR;
+  long long trafficGen_numRequests_100IR;
+  long long trafficGen_numRequests_40AR;
+  long long trafficGen_numRequests_40IR;
 
 private:
 };
 
+inline long long
+double_precision(double num) {
+  double eps = 0.0000000000005;
+  num += eps;
+  return (long long)(num * (1000 / TIMESLOT_LEN));
+}
 #endif

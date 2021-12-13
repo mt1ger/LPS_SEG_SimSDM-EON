@@ -5,11 +5,9 @@
 #include "Network.h"
 #include "RandomVariable.h"
 
-class TrafficGenerator
-{
+class TrafficGenerator {
 public:
-  TrafficGenerator(Network *net, shared_ptr<EventQueue> eq)
-  {
+  TrafficGenerator(Network *net, shared_ptr<EventQueue> eq) {
     network    = net;
     eventQueue = eq;
   }
@@ -25,7 +23,7 @@ public:
   gen_request(double systemTime);
 
 private:
-  Network *   network;
+  Network               *network;
   shared_ptr<EventQueue> eventQueue;
 };
 #endif
