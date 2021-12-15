@@ -18,6 +18,7 @@
 /** Commonly needed **/
 #define DEBUG_print_new_built_event
 #define DEBUG_print_potential_voids
+#define DEBUG_print_potential_voids_isolated
 /* Super Channel info for a specific request */
 #define DEBUG_print_SC_info
 /* Sorted Super Channel based on their performance */

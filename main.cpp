@@ -42,9 +42,9 @@ main(int argc, char *argv[]) {
   network->numCores    = atoi(argv[4]);
   network->lambda        = atof(argv[5]);
   network->mu            = atof(argv[6]);
-  srand(atof(argv[7]));
-  network->maxAllowedLightSegments = atof(argv[8]);
-  network->maxAllowedTimeSlices    = atof(argv[9]);
+  network->maxAllowedLightSegments = atof(argv[7]);
+  network->maxAllowedTimeSlices    = atof(argv[8]);
+  srand(atof(argv[9]));
 
   cout << "************************************************************"
        << endl;
@@ -55,11 +55,11 @@ main(int argc, char *argv[]) {
   cout << "Average arriving rate of request (Lambda): " << network->lambda
        << endl;
   cout << "Average holding time (1 / Mu): " << network->mu << endl;
-  cout << "Seed for random number generation: " << atof(argv[7]) << endl;
   cout << "Maximum number of light-segments for each request: "
        << network->maxAllowedLightSegments << endl;
   cout << "Maximum number of time slices for each request: "
        << network->maxAllowedTimeSlices << endl;
+  cout << "Seed for random number generation: " << atof(argv[9]) << endl;
   cout << "************************************************************"
        << endl;
 

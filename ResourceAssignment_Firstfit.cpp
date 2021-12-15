@@ -128,13 +128,39 @@ ResourceAssignment::create_voids(
 #ifdef DEBUG_print_potential_voids
   cout << "\033[0;32mPRINT\033[0m "
        << "Potential voids for this time slot" << endl;
-
-  auto m = potentialVoids.begin();
-  cout << "  ";
-  for(m = potentialVoids.begin(); m != potentialVoids.end(); m++) {
-    cout << m->core << ' ' << m->startSS << ' ' << m->endSS << "     ";
+  for(auto &pv : potentialVoids) {
+    cout << pv.core << " " << pv.startSS << ' ' << pv.endSS << "   ";
   }
   cout << endl;
+#endif
+}
+
+/**** Isolate the potentialVoids by their cores ****/
+void
+ResourceAssignment::isolate_potentialVoids() {
+
+  list<PotentialVoid> tmp;
+  int                 cnt = network->numCores - 1;
+  while(cnt > 0) {
+    potentialVoidsIso[cnt] = tmp;
+    cnt--;
+  }
+
+  for(auto iter = potentialVoids.begin(); iter != potentialVoids.end();
+      iter++) {
+    potentialVoidsIso[iter->core].push_back(*iter);
+  }
+
+#ifdef DEBUG_print_potential_voids_isolated
+  cout << "\033[0;32mPRINT\033[0m "
+       << "Isolate potential voids for this time slot" << endl;
+  for(auto &pvs : potentialVoidsIso) {
+    cout << "At core " << pvs.first << endl;
+    for(auto &pv : pvs.second) {
+      cout << pv.core << " " << pv.startSS << ' ' << pv.endSS << "   ";
+    }
+    cout << endl;
+  }
 #endif
 }
 
@@ -228,13 +254,13 @@ ResourceAssignment::sort_super_channel(
 }
 
 int
-ResourceAssignment::match_SC_and_voids(unsigned int bitRate,
-                                       bool *       availableFlag_ptr,
-                                       list<SuperChannel>::iterator sCIter,
-                                       unsigned int *numofGB_ptr) {
+ResourceAssignment::match_SC_and_voids(
+    unsigned int bitRate, bool *availableFlag_ptr,
+    list<SuperChannel>::iterator sCIter, unsigned int *numofGB_ptr,
+    list<PotentialVoid> &potentialVoids_ThisCore) {
 
   SpectrumSegment spectrumSegment;
-  auto             potentialVoids_iter = potentialVoids.begin();
+  auto            potentialVoids_iter = potentialVoids_ThisCore.begin();
   while(bitRate > 0) {
     /* Maybe useful when using multiple SC options for allocation */
     /* if(potentialVoids_iter == potentialVoids.end()) { */
@@ -244,7 +270,7 @@ ResourceAssignment::match_SC_and_voids(unsigned int bitRate,
     /*     NextSC = false; */
     /*   break; */
     /* } */
-    if(potentialVoids_iter == potentialVoids.end()) {
+    if(potentialVoids_iter == potentialVoids_ThisCore.end()) {
       *availableFlag_ptr = false;
       break;
     }
@@ -265,19 +291,31 @@ ResourceAssignment::match_SC_and_voids(unsigned int bitRate,
       else
         bitRate = 0;
       (*numofGB_ptr)++;
-      potentialVoids_iter = potentialVoids.erase(potentialVoids_iter);
+      potentialVoids_iter = potentialVoids_ThisCore.erase(potentialVoids_iter);
 
 #ifdef DEBUG_print_potential_voids
       cout << "\033[0;32mThe SC is \033[0m " << sCIter->sCBitRate << endl;
-      auto probeIndex = potentialVoids.begin();
+      auto probeIndex = potentialVoids_ThisCore.begin();
       cout << "\033[0;32mPRINT\033[0m "
            << "Potential voids AFTER reservation" << endl;
-      for(probeIndex = potentialVoids.begin();
-          probeIndex != potentialVoids.end(); probeIndex++) {
+      for(probeIndex = potentialVoids_ThisCore.begin();
+          probeIndex != potentialVoids_ThisCore.end(); probeIndex++) {
         cout << probeIndex->core << ' ' << probeIndex->startSS << ' '
              << probeIndex->endSS << "     ";
       }
       cout << endl;
+#endif
+#ifdef DEBUG_print_potential_voids_isolated
+      cout << "\033[0;32mPRINT\033[0m "
+           << "Isolate potential voids for this time slot, AFTER pre-allocation"
+           << endl;
+      for(auto &pvs : potentialVoidsIso) {
+        cout << "At core " << pvs.first << endl;
+        for(auto &pv : pvs.second) {
+          cout << pv.core << " " << pv.startSS << ' ' << pv.endSS << "   ";
+        }
+        cout << endl;
+      }
 #endif
 
       // break;
@@ -307,18 +345,19 @@ ResourceAssignment::match_SC_and_voids(unsigned int bitRate,
             = potentialVoids_iter->startSS + sCIter->numMSSs + GB;
       }
       else {
-        potentialVoids_iter = potentialVoids.erase(potentialVoids_iter);
+        potentialVoids_iter
+            = potentialVoids_ThisCore.erase(potentialVoids_iter);
       }
       (*numofGB_ptr)++;
 
 #ifdef DEBUG_print_potential_voids
       cout << "\033[0;32mThe SC is \033[0m " << sCIter->sCBitRate << endl;
-      auto probeIndex = potentialVoids.begin();
+      auto probeIndex = potentialVoids_ThisCore.begin();
       cout << "\033[0;32mPRINT\033[0m "
            << "Potential voids AFTER reservation" << endl;
       cout << "  ";
-      for(probeIndex = potentialVoids.begin();
-          probeIndex != potentialVoids.end(); probeIndex++) {
+      for(probeIndex = potentialVoids_ThisCore.begin();
+          probeIndex != potentialVoids_ThisCore.end(); probeIndex++) {
         cout << probeIndex->core << ' ' << probeIndex->startSS << ' '
              << probeIndex->endSS << "     ";
       }
@@ -455,7 +494,8 @@ ResourceAssignment::handle_requests(
     }
 
     /* Processing for new period */
-#ifdef DEBUG_print_potential_voids
+#if defined(DEBUG_print_potential_voids)                                       \
+    || defined(DEBUG_print_potential_voids_isolated)
     cout << "\033[0;32m**** CHANGE PERIOD ****\033[0m " << endl;
 #endif
     // Set the starting time for the new period
@@ -466,8 +506,11 @@ ResourceAssignment::handle_requests(
 
     // Find all the voids for this time point
     potentialVoids.clear();
+    potentialVoidsIso.clear();
     create_voids(&circuitRoute, timeIter);
+    isolate_potentialVoids();
     potentialVoids_backup = potentialVoids;
+    potentialVoidsIso_backup = potentialVoidsIso;
 
     // No voids
     if(potentialVoids.empty()) {
@@ -491,7 +534,7 @@ ResourceAssignment::handle_requests(
 
 #ifdef DEBUG_print_potential_voids
       cout << "\033[0;32mPRINT\033[0m "
-           << "Potential voids for this time slot, before pre-allocation"
+           << "Potential voids for this time slot, BEFORE pre-allocation"
            << endl;
 
       auto m = potentialVoids.begin();
@@ -502,7 +545,21 @@ ResourceAssignment::handle_requests(
       cout << endl;
 #endif
 
-      match_SC_and_voids(bitRate, &availableFlag, sCIter, &numofGB);
+#ifdef DEBUG_print_potential_voids_isolated
+      cout
+          << "\033[0;32mPRINT\033[0m "
+          << "Isolate potential voids for this time slot, BEFORE pre-allocation"
+          << endl;
+      for(auto &pvs : potentialVoidsIso) {
+        cout << "At core " << pvs.first << endl;
+        for(auto &pv : pvs.second) {
+          cout << pv.core << " " << pv.startSS << ' ' << pv.endSS << "   ";
+        }
+        cout << endl;
+      }
+#endif
+      match_SC_and_voids(bitRate, &availableFlag, sCIter, &numofGB,
+                         potentialVoids);
       if(availableFlag == true) {
         if(sCIter != recordIter) {
           /* cout << "changed lightSegment type" << endl; */
@@ -543,8 +600,6 @@ ResourceAssignment::handle_requests(
 
   /** Real allocation and printout **/
   if(availableFlag == false) {
-    cout << "FAILED" << endl;
-
     network->numDoneRequests++;
 
 #ifdef DEBUG_collect_eventID_of_blocked_requests

@@ -23,7 +23,7 @@ public:
 };
 
 // Light-segment Attributes
-class LightSegment {
+class LightSegment : public SpectrumSegment {
 public:
   LightSegment() {}
   ~LightSegment() {}
@@ -31,13 +31,16 @@ public:
   // Each period is: [startTimeSlot, endTimeSlot], including the endTimeSlot.
   long long    startTimeSlot; // The start time slot of this period
   long long    endTimeSlot;   // The end time slot of this period
-  unsigned int core;          // The core for this light-segment
-  unsigned int firstSS; // The first spectral slot on the core above for this
-                        // light-segment
-  unsigned int
-      lastSS; // The last spectral slot on the core above for this light-segment
-  string       mF;      // The mF used for this light-segment
-  unsigned int bitRate; // The bitRate for this light-segment
+
+  /* unsigned int core;          // The core for this light-segment */
+  /* unsigned int firstSS; // The first spectral slot on the core above for this
+   */
+  /*                       // light-segment */
+  /* unsigned int */
+  /*     lastSS; // The last spectral slot on the core above for this
+   * light-segment */
+  /* string       mF;      // The mF used for this light-segment */
+  /* unsigned int bitRate; // The bitRate for this light-segment */
 };
 
 class SuperChannel {
@@ -165,6 +168,7 @@ public:
   }
 };
 
+
 class ResourceAssignment {
 public:
   ResourceAssignment(Network *net, shared_ptr<EventQueue> eq) {
@@ -186,9 +190,11 @@ public:
   list<vector<unsigned int>> availableSpecSlots;
   // Stores the potential voids that are formed by the available spectral slots
   // for this time point
-  list<PotentialVoid> potentialVoids;
-  // Backup potentialVoids
-  list<PotentialVoid> potentialVoids_backup;
+  list<PotentialVoid>           potentialVoids;
+  list<PotentialVoid>           potentialVoids_backup;
+  map<int, list<PotentialVoid>> potentialVoidsIso;
+  // Backup potentialVoidsIso
+  map<int, list<PotentialVoid>> potentialVoidsIso_backup;
 
   /*** Functions ***/
   void
@@ -232,10 +238,13 @@ public:
                      vector<int> *              circuitRoute_ptr,
                      shared_ptr<CircuitRequest> circuitRequest_ptr,
                      SuperChannelQueue *        superChannelQueue);
+  void
+  isolate_potentialVoids();
   int
   match_SC_and_voids(unsigned int bitRate, bool *availableFlag_ptr,
                      list<SuperChannel>::iterator sCIter,
-                     unsigned int *               NumofGB_ptr);
+                     unsigned int                *NumofGB_ptr,
+                     list<PotentialVoid>         &potentialVoid_ThisCore);
 
 private:
   Network *              network;
