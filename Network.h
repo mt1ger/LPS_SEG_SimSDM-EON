@@ -4,10 +4,11 @@
 #include "EventQueue.h"
 #include <map>
 #include <memory>
+#include <set>
 #include <thread>
 #include <vector>
 
-#define TESTING
+/* #define TESTING */
 #define DEBUG_collect_eventID_of_blocked_requests
 
 #ifdef TESTING
@@ -57,6 +58,7 @@ public:
   double       lambda, mu;
   long long    numRequests;
   unsigned int numCores;
+  unsigned int seed;
   size_t       maxAllowedLightSegments;
   size_t       maxAllowedTimeSlices;
 

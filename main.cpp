@@ -44,7 +44,8 @@ main(int argc, char *argv[]) {
   network->mu            = atof(argv[6]);
   network->maxAllowedLightSegments = atof(argv[7]);
   network->maxAllowedTimeSlices    = atof(argv[8]);
-  srand(atof(argv[9]));
+  network->seed                    = atof(argv[9]);
+  srand(network->seed);
 
   cout << "************************************************************"
        << endl;
@@ -59,7 +60,7 @@ main(int argc, char *argv[]) {
        << network->maxAllowedLightSegments << endl;
   cout << "Maximum number of time slices for each request: "
        << network->maxAllowedTimeSlices << endl;
-  cout << "Seed for random number generation: " << atof(argv[9]) << endl;
+  cout << "Seed for random number generation: " << network->seed << endl;
   cout << "************************************************************"
        << endl;
 
@@ -88,8 +89,8 @@ main(int argc, char *argv[]) {
   resultFile = path + "Plot.txt";
   file_ptr.open(resultFile, fstream::app);
   string plot
-      = to_string(network->numCores) + ',' + to_string(erlang) + ',' + argv[7]
-        + ',' + to_string(blockingProbability) + ','
+      = to_string(network->numCores) + ',' + to_string(erlang) + ','
+        + to_string(network->seed) + ',' + to_string(blockingProbability) + ','
         + to_string(network->maxTransponders) + ','
         + to_string(network->numTransponders_total) + ','
         + to_string(network->maxLPSs) + ',' + to_string(network->avgCores) + ','

@@ -595,6 +595,7 @@ ResourceAssignment::handle_requests(
     timeCount++;
     durationCount--;
   }
+
   if(LSAttributes.size() > network->maxAllowedTimeSlices)
     availableFlag = false;
 
@@ -721,12 +722,24 @@ ResourceAssignment::handle_requests(
       cout << circuitRoute.at(t) << " --> ";
     cout << circuitRoute.at(circuitRoute.size() - 1) << endl;
     // cout << "Super Channel Option: " << bR << endl;
-    ;
     cout << "Totally performed " << LSAttributes.size() - 1 << " LPSs." << endl;
+
+    // For cnt the number of cores used.
+    set<int> cores;
+
     for(long unsigned int i = 0; i < LSAttributes.size(); i++) {
       cout << "From " << LSAttributes[i][0].startTimeSlot << " to "
            << LSAttributes[i][0].endTimeSlot << endl;
+
+      cores.clear();
+      cores.insert(LSAttributes[i][0].core);
+
       for(long unsigned int j = 0; j < LSAttributes[i].size(); j++) {
+
+        if(cores.find(LSAttributes[i][j].core) == cores.end()) {
+          cores.insert(LSAttributes[i][j].core);
+        }
+
         cout << "  ";
         cout << "Core: " << LSAttributes[i][j].core
              << "  Spectral Segments: " << LSAttributes[i][j].firstSS << " to "
@@ -735,6 +748,7 @@ ResourceAssignment::handle_requests(
              << "  MF: " << LSAttributes[i][j].mF << endl;
       }
     }
+    cout << "# of Cores: " << cores.size() << endl;
     cout << "# of Segments: " << maxLightSegments << endl;
     cout << "# of Time-Slices: " << LSAttributes.size() << endl;
     cout << "------------------------------------------------------------"
